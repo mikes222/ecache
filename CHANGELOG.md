@@ -1,3 +1,7 @@
+## 2.0.0
+
+* Support for null-safety
+
 ## 1.0.1
 
 * Downgrading meta package since many users still uses the previous meta

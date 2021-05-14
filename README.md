@@ -1,16 +1,25 @@
 # Ecache
 
-Ecache is a simple library to implement application caching in `dart` inspired by [gcache](https://github.com/bluele/gcache)
+Ecache is a simple library to implement in-memory caching with support to remove entries to prevent memory overflow.
 
-Ecache is a fork of dcache with a few contract-breaking changes. 
+It is inspired by [gcache](https://github.com/bluele/gcache)
+
+Ecache is a fork of dcache with a few breaking changes and now support for dart-null-safety.
 
 ## Feature
 
 * Supports expirable Cache, LFU, LRU.
 * Support eviction
-* Automatically load cache if it doesn't exists. (Optional)
-* Async loading of expirate value
+* Automatically load cache entries if not existing. (Optional)
 * Callback for evicted items to perform cleanup (Optional)
+
+## Installation
+
+Add to pubspec.yaml:
+```yaml
+dependencies:
+  ecache: ^2.0.0
+```
 
 ## Example
 
@@ -70,4 +79,3 @@ Author of ecache: Michael Schwartz.
 
 ## Contribution
 
-Please use github for PullRequests or Issues. 
