@@ -1,73 +1,58 @@
 part of ecache;
 
-typedef V LoaderFunc<K, V>(K key, V oldValue);
+///
+/// returns the value for the given key [key] or null. This method will be called if the value for the requested [key] is not
+/// available in the cache.
+///
+typedef V LoaderFunc<K, V>(K key);
 
 abstract class Cache<K, V> {
   Storage<K, V> _internalStorage;
-  LoaderFunc<K, V> _loaderFunc;
-  Duration _expiration;
+  final int capacity;
 
-  /// Determine if the loading function in case of "refreshing", would be waited or not
-  /// In some case we are more interested by the quick answer than a accurate one
-  bool _syncValueReloading;
+  Cache({required Storage<K, V> storage, required this.capacity})
+      : assert(capacity > 0),
+        _internalStorage = storage;
 
-  Cache({@required Storage<K, V> storage}) {
-    _internalStorage = storage;
-
-    _syncValueReloading = true;
-  }
-
-  /// return the element identify by [key]
-  V get(K key) {
-    // Note: I redo a null check here to avoid a O(n) iteration if the _loaderFunc is null
-    if (_loaderFunc != null && !containsKey(key)) {
-      _loadValue(CacheEntry(key, null));
-    }
-
-    CacheEntry<K, V> entry = _get(key);
+  /// return the element identified by [key]
+  V? get(K key) {
+    CacheEntry<K, V>? entry = _get(key);
 
     if (entry == null) {
       return null;
     }
 
-    // Check if the value hasn't expired
-    if (_expiration != null && DateTime.now().difference(entry.insertTime) >= _expiration) {
-      if (_syncValueReloading) {
-        _loadValue(entry);
-        entry = _get(key);
-      } else {
-        // Non blocking
-        Future(() => _loadValue(entry));
-      }
+    entry = _beforeGet(entry);
+
+    if (entry == null) {
+      return null;
     }
 
-    entry?.use++;
-    entry?.lastUse = DateTime.now();
-    return entry?.value;
+    return entry.value;
   }
 
-  // Load a new value and insert in the cache
-  void _loadValue(CacheEntry<K, V> entry) {
-    if (_loaderFunc != null && !entry.updating) {
-      entry.updating = true;
-      // Prevent double calls
-      _set(entry.key, _loaderFunc(entry.key, entry.value));
-    }
+  @protected
+  CacheEntry<K, V>? _beforeGet(CacheEntry<K, V> entry) {
+    return entry;
   }
 
   /// internal [get]
-  CacheEntry<K, V> _get(K key) => _internalStorage[key];
+  CacheEntry<K, V>? _get(K key) => _internalStorage[key];
 
   /// add [element] in the cache at [key]
-  Cache<K, V> set(K key, V element) {
-    return _set(key, element);
+  void set(K key, V element) {
+    if (!containsKey(key) && length >= capacity) {
+      _onCapacity(key, element);
+    }
+    _internalStorage[key] = _createCacheEntry(key, element);
   }
 
+  @protected
+  void _onCapacity(K key, V element);
+
   /// internal [set]
-  Cache<K, V> _set(K key, V element) {
-    _internalStorage[key] = CacheEntry(key, element);
-    return this;
-  }
+  @protected
+  CacheEntry<K, V> _createCacheEntry(K key, V element);
 
   /// return the number of element in the cache
   int get length => _internalStorage.length;
@@ -88,29 +73,17 @@ abstract class Cache<K, V> {
   /// remove all the entry inside the cache
   void clear() => _internalStorage.clear();
 
-  set loader(LoaderFunc<K, V> loadFunc) {
-    _loaderFunc = loadFunc;
-  }
-
   set storage(Storage<K, V> storage) {
     _internalStorage = storage;
   }
 
   Storage<K, V> get storage => _internalStorage;
 
-  set expiration(Duration duration) {
-    _expiration = duration;
-  }
-
-  set syncLoading(bool syncLoading) {
-    _syncValueReloading = syncLoading;
-  }
-
-  V remove(K key) {
+  V? remove(K key) {
     return _remove(key);
   }
 
-  V _remove(K key) {
+  V? _remove(K key) {
     return _internalStorage.remove(key)?.value;
   }
 }
