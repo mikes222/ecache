@@ -1,6 +1,6 @@
 part of ecache;
 
-class LfuCache<K, V> extends SimpleCache<K, V> {
+class LfuCache<K, V> extends Cache<K, V> {
   LfuCache({required Storage<K, V> storage, required int capacity}) : super(storage: storage, capacity: capacity);
 
   @override

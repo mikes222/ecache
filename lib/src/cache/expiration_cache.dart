@@ -1,4 +1,4 @@
-import 'package:ecache/ecache.dart';
+part of ecache;
 
 class ExpirationCache<K, V> extends Cache<K, V> {
   final Duration expiration;
@@ -23,6 +23,9 @@ class ExpirationCache<K, V> extends Cache<K, V> {
     }
     return entry;
   }
+
+  @override
+  void _onCapacity(K key, V element) {}
 }
 
 /////////////////////////////////////////////////////////////////////////////

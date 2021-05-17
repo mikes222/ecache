@@ -39,22 +39,14 @@ void main() {
   test('Test LRU eviction', () {
     Cache<int, int> c = LruCache<int, int>(storage: SimpleStorage(), capacity: 3);
     c[4] = 40;
-    sleep(Duration(milliseconds: 5));
     c[5] = 50;
-    sleep(Duration(milliseconds: 5));
     c[6] = 60;
-    sleep(Duration(milliseconds: 5));
 
     expect(c.get(4), equals(40));
-    sleep(Duration(milliseconds: 5));
     expect(c.get(5), equals(50));
-    sleep(Duration(milliseconds: 5));
     expect(c.get(6), equals(60));
-    sleep(Duration(milliseconds: 5));
     expect(c.get(4), equals(40));
-    sleep(Duration(milliseconds: 5));
     expect(c.get(6), equals(60));
-    sleep(Duration(milliseconds: 5));
     c[7] = 70;
     expect(c.get(7), equals(70));
     expect(c.containsKey(5), equals(false));

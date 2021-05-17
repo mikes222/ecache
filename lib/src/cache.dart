@@ -7,7 +7,7 @@ part of ecache;
 typedef V LoaderFunc<K, V>(K key);
 
 abstract class Cache<K, V> {
-  Storage<K, V> _internalStorage;
+  final Storage<K, V> _internalStorage;
   final int capacity;
 
   Cache({required Storage<K, V> storage, required this.capacity})
@@ -73,11 +73,11 @@ abstract class Cache<K, V> {
   /// remove all the entry inside the cache
   void clear() => _internalStorage.clear();
 
-  set storage(Storage<K, V> storage) {
-    _internalStorage = storage;
-  }
+  // set storage(Storage<K, V> storage) {
+  //   _internalStorage = storage;
+  // }
 
-  Storage<K, V> get storage => _internalStorage;
+  // Storage<K, V> get storage => _internalStorage;
 
   V? remove(K key) {
     return _remove(key);

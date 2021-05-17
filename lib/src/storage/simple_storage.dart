@@ -10,7 +10,7 @@ class SimpleStorage<K, V> implements Storage<K, V> {
 
   /// if onEvict is set that method is called whenever an entry is removed from the cache.
   /// At the time the method is called the entry is already removed.
-  OnEvict<K, V>? onEvict;
+  final OnEvict<K, V>? onEvict;
 
   SimpleStorage({this.onEvict});
 

@@ -1,6 +1,7 @@
 part of ecache;
 
 class LruCache<K, V> extends Cache<K, V> {
+  int lastUse = 0;
   LruCache({required Storage<K, V> storage, required int capacity}) : super(storage: storage, capacity: capacity);
 
   @override
@@ -16,12 +17,12 @@ class LruCache<K, V> extends Cache<K, V> {
 
   @override
   CacheEntry<K, V> _createCacheEntry(K key, V element) {
-    return LruCacheEntry(key, element);
+    return LruCacheEntry(key, element, ++lastUse);
   }
 
   @protected
   CacheEntry<K, V>? _beforeGet(CacheEntry<K, V> entry) {
-    (entry as LruCacheEntry).updateUseTime();
+    (entry as LruCacheEntry).updateLastUse(++lastUse);
     return entry;
   }
 }
@@ -29,13 +30,11 @@ class LruCache<K, V> extends Cache<K, V> {
 /////////////////////////////////////////////////////////////////////////////
 
 class LruCacheEntry<K, V> extends CacheEntry<K, V> {
-  late int lastUse;
+  int lastUse;
 
-  LruCacheEntry(K key, V? value) : super(key, value) {
-    updateUseTime();
-  }
+  LruCacheEntry(K key, V? value, this.lastUse) : super(key, value);
 
-  void updateUseTime() {
-    lastUse = DateTime.now().millisecondsSinceEpoch;
+  void updateLastUse(int lastUse) {
+    this.lastUse = lastUse;
   }
 }

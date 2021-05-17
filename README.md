@@ -8,7 +8,10 @@ Ecache is a fork of dcache with a few breaking changes and now support for dart-
 
 ## Feature
 
-* Supports expirable Cache, LFU, LRU.
+* Supports expiration based on Least frequently used item (LFU)
+* Supports expiration based on Least recently used items (LRU)
+* Supports expiration based on removing the "first" entry in the list
+* Supports expiration based on duration (expiration)
 * Support eviction
 * Automatically load cache entries if not existing. (Optional)
 * Callback for evicted items to perform cleanup (Optional)
@@ -18,10 +21,8 @@ Ecache is a fork of dcache with a few breaking changes and now support for dart-
 Add to pubspec.yaml:
 ```yaml
 dependencies:
-  ecache: ^2.0.0
+  ecache: ^2.0.1
 ```
-
-## Example
 
 ### Simple use case
 
@@ -77,5 +78,8 @@ Original Author:
 
 Author of ecache: Michael Schwartz. 
 
-## Contribution
+## License
+
+MIT License, see LICENSE file
+
 

@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Improved performance for LRUCache
+
 ## 2.0.0
 
 * Support for null-safety
