@@ -13,7 +13,7 @@ typedef V LoaderFunc<K, V>(K key);
 abstract class AbstractCache<K, V> extends Cache<K, V> {
   final Storage<K, V> storage;
 
-  AbstractCache({required Storage<K, V> this.storage, required int capacity})
+  AbstractCache({required this.storage, required int capacity})
       : super(capacity: capacity);
 
   /// return the element identified by [key]
@@ -67,12 +67,6 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   /// remove all the entry inside the cache
   @override
   void clear() => storage.clear();
-
-  // set storage(Storage<K, V> storage) {
-  //   _internalStorage = storage;
-  // }
-
-  // Storage<K, V> get storage => _internalStorage;
 
   @override
   V? remove(K key) {

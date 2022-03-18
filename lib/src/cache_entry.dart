@@ -1,4 +1,3 @@
-
 class CacheEntry<K, V> {
   final K key;
   final V? value;

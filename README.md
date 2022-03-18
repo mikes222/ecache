@@ -4,8 +4,6 @@ Ecache is a simple library to implement in-memory caching with support to remove
 
 It is inspired by [gcache](https://github.com/bluele/gcache)
 
-Ecache is a fork of dcache with a few breaking changes and now support for dart-null-safety.
-
 ## Feature
 
 * Supports expiration based on Least frequently used item (LFU)

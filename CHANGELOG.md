@@ -1,3 +1,9 @@
+## 2.0.2
+
+* Improved performance
+* Updated libraries
+* Added StatisticsStorage to get a glimpse about performance
+
 ## 2.0.1
 
 * Improved performance for LRUCache
