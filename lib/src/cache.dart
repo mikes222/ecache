@@ -1,5 +1,3 @@
-part of ecache;
-
 ///
 /// returns the value for the given key [key] or null. This method will be called if the value for the requested [key] is not
 /// available in the cache.
@@ -7,58 +5,21 @@ part of ecache;
 typedef V LoaderFunc<K, V>(K key);
 
 abstract class Cache<K, V> {
-  final Storage<K, V> _internalStorage;
   final int capacity;
 
-  Cache({required Storage<K, V> storage, required this.capacity})
-      : assert(capacity > 0),
-        _internalStorage = storage;
+  Cache({required this.capacity}) : assert(capacity > 0);
 
   /// return the element identified by [key]
-  V? get(K key) {
-    CacheEntry<K, V>? entry = _get(key);
-
-    if (entry == null) {
-      return null;
-    }
-
-    entry = _beforeGet(entry);
-
-    if (entry == null) {
-      return null;
-    }
-
-    return entry.value;
-  }
-
-  @protected
-  CacheEntry<K, V>? _beforeGet(CacheEntry<K, V> entry) {
-    return entry;
-  }
-
-  /// internal [get]
-  CacheEntry<K, V>? _get(K key) => _internalStorage[key];
+  V? get(K key);
 
   /// add [element] in the cache at [key]
-  void set(K key, V element) {
-    if (!containsKey(key) && length >= capacity) {
-      _onCapacity(key, element);
-    }
-    _internalStorage[key] = _createCacheEntry(key, element);
-  }
-
-  @protected
-  void _onCapacity(K key, V element);
-
-  /// internal [set]
-  @protected
-  CacheEntry<K, V> _createCacheEntry(K key, V element);
+  void set(K key, V element);
 
   /// return the number of element in the cache
-  int get length => _internalStorage.length;
+  int get length;
 
   // Check if the cache contains a specific entry
-  bool containsKey(K key) => _internalStorage.containsKey(key);
+  bool containsKey(K key);
 
   /// return the value at [key]
   dynamic operator [](K key) {
@@ -71,19 +32,7 @@ abstract class Cache<K, V> {
   }
 
   /// remove all the entry inside the cache
-  void clear() => _internalStorage.clear();
+  void clear();
 
-  // set storage(Storage<K, V> storage) {
-  //   _internalStorage = storage;
-  // }
-
-  // Storage<K, V> get storage => _internalStorage;
-
-  V? remove(K key) {
-    return _remove(key);
-  }
-
-  V? _remove(K key) {
-    return _internalStorage.remove(key)?.value;
-  }
+  V? remove(K key);
 }

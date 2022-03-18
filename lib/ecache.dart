@@ -1,14 +1,10 @@
 library ecache;
 
-import 'dart:collection';
-
-import 'package:meta/meta.dart';
-
-part 'src/cache.dart';
-part 'src/cache/lfu_cache.dart';
-part 'src/cache/lru_cache.dart';
-part 'src/cache/simple_cache.dart';
-part 'src/cache/expiration_cache.dart';
-part 'src/cache_entry.dart';
-part 'src/storage.dart';
-part 'src/storage/simple_storage.dart';
+export 'src/cache.dart';
+export 'src/cache/expiration_cache.dart';
+export 'src/cache/lfu_cache.dart';
+export 'src/cache/lru_cache.dart';
+export 'src/cache/simple_cache.dart';
+export 'src/cache_entry.dart';
+export 'src/storage.dart';
+export 'src/storage/simple_storage.dart';

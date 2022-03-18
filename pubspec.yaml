@@ -1,11 +1,18 @@
 name: ecache
-version: 2.0.1
+version: 2.0.2
 description: >
   Provide a dart cache library usable on web, flutter and server side
 homepage: https://github.com/mikes222/ecache
 environment:
   sdk: ">=2.12.0 <3.0.0"
+
 dependencies:
-  meta: '^1.3.0'
+  flutter:
+    sdk: flutter
+
+  meta: ^1.7.0
+
 dev_dependencies:
-  test: '^1.17.4'
+  flutter_test:
+    sdk: flutter
+

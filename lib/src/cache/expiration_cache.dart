@@ -1,31 +1,46 @@
-part of ecache;
+import '../cache_entry.dart';
+import '../storage.dart';
+import 'abstract_cache.dart';
 
-class ExpirationCache<K, V> extends Cache<K, V> {
+/// A cache which evicts entries after a certain amount of time
+class ExpirationCache<K, V> extends AbstractCache<K, V> {
   final Duration expiration;
 
-  ExpirationCache(storage, this.expiration, int capacity)
+  int lastCleanup;
+
+  ExpirationCache(Storage<K, V> storage, this.expiration, int capacity)
       : assert(!expiration.isNegative),
         assert(expiration.inMilliseconds > 0),
+        lastCleanup = DateTime.now().millisecondsSinceEpoch,
         super(storage: storage, capacity: capacity);
 
   @override
-  CacheEntry<K, V> _createCacheEntry(K key, V element) {
+  CacheEntry<K, V> createCacheEntry(K key, V element) {
     return ExpirationCacheEntry(key, element);
   }
 
   @override
-  CacheEntry<K, V>? _beforeGet(CacheEntry<K, V> entry) {
-    if (entry is ExpirationCacheEntry) {
-      if ((entry as ExpirationCacheEntry).insertTime < DateTime.now().millisecondsSinceEpoch - expiration.inMilliseconds) {
-        remove(entry.key);
-        return null;
-      }
+  CacheEntry<K, V>? beforeGet(CacheEntry<K, V> entry) {
+    if ((entry as ExpirationCacheEntry).insertTime <
+        DateTime.now().millisecondsSinceEpoch - expiration.inMilliseconds) {
+      remove(entry.key);
+      return null;
     }
     return entry;
   }
 
   @override
-  void _onCapacity(K key, V element) {}
+  void onCapacity(K key, V element) {
+    int toRemove =
+        DateTime.now().millisecondsSinceEpoch - expiration.inMilliseconds;
+    if (lastCleanup > toRemove) return;
+    Iterable<CacheEntry<K, V>> itemsToRemove = storage.entries.where(
+        (element) => (element as ExpirationCacheEntry).insertTime < toRemove);
+    itemsToRemove.forEach((element) {
+      storage.remove(element.key);
+    });
+    lastCleanup = DateTime.now().millisecondsSinceEpoch;
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

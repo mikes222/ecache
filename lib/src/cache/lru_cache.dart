@@ -1,27 +1,35 @@
-part of ecache;
+import 'package:flutter/foundation.dart';
 
-class LruCache<K, V> extends Cache<K, V> {
+import '../cache_entry.dart';
+import '../storage.dart';
+import 'abstract_cache.dart';
+
+class LruCache<K, V> extends AbstractCache<K, V> {
   int lastUse = 0;
-  LruCache({required Storage<K, V> storage, required int capacity}) : super(storage: storage, capacity: capacity);
+
+  LruCache({required Storage<K, V> storage, required int capacity})
+      : super(storage: storage, capacity: capacity);
 
   @override
-  void _onCapacity(K key, V element) {
-    var values = _internalStorage.values;
+  void onCapacity(K key, V element) {
+//    storage.entries.sort((a, b) => (a as LruCacheEntry).lastUse - (b as LruCacheEntry).lastUse);
     // Iterate on all keys, so the eviction is O(n) to allow an insertion at O(1)
-    LruCacheEntry<K, V> min = values
+    LruCacheEntry<K, V> min = storage.entries
         .map((e) => e as LruCacheEntry<K, V>)
-        .reduce((element1, element2) => element1.lastUse < element2.lastUse ? element1 : element2);
+        .reduce((element1, element2) =>
+            element1.lastUse < element2.lastUse ? element1 : element2);
 
-    _internalStorage.remove(min.key);
+    storage.remove(min.key);
   }
 
   @override
-  CacheEntry<K, V> _createCacheEntry(K key, V element) {
+  CacheEntry<K, V> createCacheEntry(K key, V element) {
     return LruCacheEntry(key, element, ++lastUse);
   }
 
   @protected
-  CacheEntry<K, V>? _beforeGet(CacheEntry<K, V> entry) {
+  @override
+  CacheEntry<K, V>? beforeGet(CacheEntry<K, V> entry) {
     (entry as LruCacheEntry).updateLastUse(++lastUse);
     return entry;
   }

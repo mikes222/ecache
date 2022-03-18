@@ -1,4 +1,3 @@
-part of ecache;
 
 class CacheEntry<K, V> {
   final K key;

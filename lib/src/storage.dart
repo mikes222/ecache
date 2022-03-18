@@ -1,4 +1,9 @@
-part of ecache;
+import 'cache_entry.dart';
+
+///
+/// This method will be called if a value is removed from the storage. It can be used to dispose items
+///
+typedef void OnEvict<K, V>(K k, V v);
 
 abstract class Storage<K, V> {
   CacheEntry<K, V>? get(K key);
@@ -20,5 +25,5 @@ abstract class Storage<K, V> {
 
   List<K> get keys;
 
-  List<CacheEntry<K, V>> get values;
+  List<CacheEntry<K, V>> get entries;
 }
