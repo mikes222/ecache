@@ -17,7 +17,7 @@ It is inspired by [gcache](https://github.com/bluele/gcache)
 Add to pubspec.yaml:
 ```yaml
 dependencies:
-  ecache: ^2.0.2
+  ecache: ^2.0.3
 ```
 
 ### Simple use case
@@ -26,7 +26,7 @@ dependencies:
 import 'package:ecache/ecache.dart';
 
 void main() {
-  Cache c = new SimpleCache(storage: SimpleStorage(), capacity: 20);
+  Cache c = new SimpleCache(capacity: 20);
 
     c.set("key", 42);
     print(c.get("key")); // 42
@@ -41,12 +41,31 @@ void main() {
 import 'package:ecache/ecache.dart';
 
 void main() {
-  Cache c = new SimpleCache(storage: new SimpleStorage(), capacity: 20, onEvict: (key, value) {value.dispose();});
+  Cache c = new SimpleCache(capacity: 20, storage: SimpleStorage(onEvict: (key, value) {
+    value.dispose();
+  }));
+
+  c.set("key", 42);
+  print(c.get("key")); // 42
+  print(c.containsKey("unknown_key")); // false
+  print(c.get("unknown_key")); // nil
+}
+```
+
+### Get statistics
+
+```dart
+import 'package:ecache/ecache.dart';
+
+void main() {
+  storage = StatisticsStorage();
+  Cache c = new SimpleCache(storage: storage, capacity: 20);
 
     c.set("key", 42);
     print(c.get("key")); // 42
     print(c.containsKey("unknown_key")); // false
     print(c.get("unknown_key")); // nil
+    print(storage.toString());
 }
 ```
 

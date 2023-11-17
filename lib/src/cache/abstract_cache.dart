@@ -1,20 +1,13 @@
 import 'package:meta/meta.dart';
 
-import '../cache.dart';
-import '../cache_entry.dart';
-import '../storage.dart';
+import '../../ecache.dart';
 
-///
-/// returns the value for the given key [key] or null. This method will be called if the value for the requested [key] is not
-/// available in the cache.
-///
-typedef V LoaderFunc<K, V>(K key);
-
+/// Abstract base class for caches
 abstract class AbstractCache<K, V> extends Cache<K, V> {
   final Storage<K, V> storage;
 
-  AbstractCache({required this.storage, required int capacity})
-      : super(capacity: capacity);
+  AbstractCache({Storage<K, V>? storage, required int capacity})
+      : this.storage = storage ?? SimpleStorage<K, V>(), super(capacity: capacity);
 
   /// return the element identified by [key]
   @override
@@ -27,13 +20,12 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
 
     entry = beforeGet(entry);
 
-    if (entry == null) {
-      return null;
-    }
-
-    return entry.value;
+    return entry?.value;
   }
 
+  /// Process the entry found in the storage before returning it. If this method
+  /// returns null the entry is considered as expired and will not be returned
+  /// to the caller.
   @protected
   CacheEntry<K, V>? beforeGet(CacheEntry<K, V> entry) {
     return entry;
@@ -48,7 +40,8 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
     storage[key] = createCacheEntry(key, element);
   }
 
-  /// called if the length of the map reaches the capacity and we want to insert another item into the map
+  /// called if the length of the map reaches the capacity and we want to
+  /// insert another item denoted by [key] and [element] into the map
   @protected
   void onCapacity(K key, V element);
 

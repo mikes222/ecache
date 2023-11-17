@@ -5,14 +5,20 @@ import 'cache_entry.dart';
 ///
 typedef void OnEvict<K, V>(K k, V v);
 
+/// The abstract interface for a storage class
 abstract class Storage<K, V> {
   CacheEntry<K, V>? get(K key);
 
   Storage set(K key, CacheEntry<K, V> value);
 
-  /// removes the entry at position key. Returns the entry or null
+  /// removes the entry at position key. Returns the entry or null. Note that
+  /// the entry may be already evicted.
   CacheEntry<K, V>? remove(K key);
 
+  /// removes the entry denoted by [key]. This is called if the capacity is reached.
+  CacheEntry<K, V>? onCapacity(K key);
+
+  /// Clears the cache
   void clear();
 
   int get length;

@@ -3,6 +3,7 @@ import 'dart:collection';
 import '../cache_entry.dart';
 import '../storage.dart';
 
+/// A simple storage class which is backed by a LinkedHashMap internally
 class SimpleStorage<K, V> implements Storage<K, V> {
   final Map<K, CacheEntry<K, V>> _internalMap =
       LinkedHashMap<K, CacheEntry<K, V>>();
@@ -15,47 +16,60 @@ class SimpleStorage<K, V> implements Storage<K, V> {
 
   @override
   CacheEntry<K, V>? operator [](K key) {
-    var ce = _internalMap[key];
-    return ce;
+    return get(key);
   }
 
   @override
   void clear() {
     if (onEvict != null) {
       _internalMap.values.forEach((element) {
-        if (element.value != null) onEvict!(element.key, element.value!);
+        if (element.value != null) onEvictInternal(element.key, element.value!);
       });
     }
     _internalMap.clear();
   }
 
+  onEvictInternal(K key, V value) {
+    onEvict!(key, value!);
+  }
+
   @override
   CacheEntry<K, V>? get(K key) {
-    return this[key];
+    var ce = _internalMap[key];
+    return ce;
   }
 
   @override
   void operator []=(K key, CacheEntry<K, V> value) {
-    CacheEntry<K, V>? oldEntry = _internalMap[key];
-    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvict!(oldEntry.key, oldEntry.value!);
-    }
-    _internalMap[key] = value;
+    set(key, value);
   }
 
   @override
   Storage set(K key, CacheEntry<K, V> value) {
-    this[key] = value;
+    CacheEntry<K, V>? oldEntry = _internalMap[key];
+    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
+      onEvictInternal(oldEntry.key, oldEntry.value!);
+    }
+    setInternal(key, value);
     return this;
+  }
+
+  void setInternal(K key, CacheEntry<K, V>  value) {
+    _internalMap[key] = value;
   }
 
   @override
   CacheEntry<K, V>? remove(K key) {
-    CacheEntry<K, V>? oldEntry = _internalMap[key];
+    CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
     if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvict!(oldEntry.key, oldEntry.value!);
+      onEvictInternal(oldEntry.key, oldEntry.value!);
     }
-    return _internalMap.remove(key);
+    return oldEntry;
+  }
+
+  @override
+  CacheEntry<K, V>? onCapacity(K key) {
+    return remove(key);
   }
 
   @override

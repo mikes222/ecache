@@ -1,9 +1,5 @@
-///
-/// returns the value for the given key [key] or null. This method will be called if the value for the requested [key] is not
-/// available in the cache.
-///
-typedef V LoaderFunc<K, V>(K key);
 
+/// The interace for the cache
 abstract class Cache<K, V> {
   final int capacity;
 
@@ -34,5 +30,7 @@ abstract class Cache<K, V> {
   /// remove all the entry inside the cache
   void clear();
 
+  /// Removes an entry from the cache. Returns null if the entry was not found.
+  /// Note that the entry which may be returned is already evicted.
   V? remove(K key);
 }

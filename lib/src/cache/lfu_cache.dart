@@ -3,8 +3,9 @@ import 'package:ecache/src/cache/abstract_cache.dart';
 import '../cache_entry.dart';
 import '../storage.dart';
 
+/// Least frequently used cache. Items which are not used often gets evicted first
 class LfuCache<K, V> extends AbstractCache<K, V> {
-  LfuCache({required Storage<K, V> storage, required int capacity})
+  LfuCache({required Storage<K, V>? storage, required int capacity})
       : super(storage: storage, capacity: capacity);
 
   @override
@@ -15,7 +16,7 @@ class LfuCache<K, V> extends AbstractCache<K, V> {
         .reduce((element1, element2) =>
             element1.use < element2.use ? element1 : element2);
 
-    storage.remove(min.key);
+    storage.onCapacity(min.key);
   }
 
   @override
