@@ -68,6 +68,15 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   }
 
   @override
+  CacheEntry<K, V>? removeInternal(K key) {
+    CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
+    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
+      onEvictInternal(oldEntry.key, oldEntry.value!);
+    }
+    return oldEntry;
+  }
+
+  @override
   CacheEntry<K, V>? onCapacity(K key) {
     return remove(key);
   }

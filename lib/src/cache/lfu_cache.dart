@@ -10,6 +10,7 @@ class LfuCache<K, V> extends AbstractCache<K, V> {
 
   @override
   void onCapacity(K key, V element) {
+    if (length < capacity) return;
     // Iterate on all keys, so the eviction is O(n) to allow an insertion at O(1)
     LfuCacheEntry<K, V> min = storage.entries
         .map((e) => e as LfuCacheEntry<K, V>)

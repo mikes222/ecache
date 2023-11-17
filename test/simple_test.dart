@@ -44,6 +44,7 @@ void main() {
     expect(c.length, 3);
     print(c.storage.toString());
   });
+
   test('Test LRU eviction', () {
     AbstractCache<int, int> c =
         LruCache<int, int>(storage: StatisticsStorage(), capacity: 3);
@@ -61,6 +62,7 @@ void main() {
     expect(c.containsKey(5), equals(false));
     print(c.storage.toString());
   });
+  
   test('Test LFU eviction', () {
     int evicted = 0;
     AbstractCache<int, int> c = LfuCache<int, int>(

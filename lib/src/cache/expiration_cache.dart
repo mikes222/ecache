@@ -24,7 +24,7 @@ class ExpirationCache<K, V> extends AbstractCache<K, V> {
     if ((entry as ExpirationCacheEntry).insertTime <
         DateTime.now().millisecondsSinceEpoch - expiration.inMilliseconds) {
       // do not call onCapacity because if the entry is expired we do not want to keep it anyway
-      storage.remove(entry.key);
+      storage.removeInternal(entry.key);
       return null;
     }
     return entry;
@@ -32,6 +32,7 @@ class ExpirationCache<K, V> extends AbstractCache<K, V> {
 
   @override
   void onCapacity(K key, V element) {
+    if (length < capacity) return;
     int toRemove =
         DateTime.now().millisecondsSinceEpoch - expiration.inMilliseconds;
     if (lastCleanup > toRemove) return;
@@ -39,7 +40,7 @@ class ExpirationCache<K, V> extends AbstractCache<K, V> {
         (element) => (element as ExpirationCacheEntry).insertTime < toRemove);
     itemsToRemove.forEach((element) {
       // do not call onCapacity because if the entry is expired we do not want to keep it anyway
-      storage.remove(element.key);
+      storage.removeInternal(element.key);
     });
     lastCleanup = DateTime.now().millisecondsSinceEpoch;
   }

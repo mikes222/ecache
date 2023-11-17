@@ -7,7 +7,8 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   final Storage<K, V> storage;
 
   AbstractCache({Storage<K, V>? storage, required int capacity})
-      : this.storage = storage ?? SimpleStorage<K, V>(), super(capacity: capacity);
+      : this.storage = storage ?? SimpleStorage<K, V>(),
+        super(capacity: capacity);
 
   /// return the element identified by [key]
   @override
@@ -34,14 +35,13 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   /// add [element] in the cache at [key]
   @override
   void set(K key, V element) {
-    if (!containsKey(key) && length >= capacity) {
-      onCapacity(key, element);
-    }
+    onCapacity(key, element);
     storage[key] = createCacheEntry(key, element);
   }
 
-  /// called if the length of the map reaches the capacity and we want to
-  /// insert another item denoted by [key] and [element] into the map
+  /// called if we want to
+  /// insert another item denoted by [key] and [element] into the map. This
+  /// method checks if the capacity is reached and eventually evicts old items.
   @protected
   void onCapacity(K key, V element);
 

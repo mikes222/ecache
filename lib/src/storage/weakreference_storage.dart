@@ -4,8 +4,12 @@ import '../cache_entry.dart';
 import '../storage.dart';
 
 /// A Storage with a fixed number of storable elements and a weak reference to elements
-/// which are specified to be evicted. Note that we cannot guarantee to call the onEvict()
-/// method for all elements.
+/// which are specified to be evicted. This way the cache can grow until the
+/// garbage collector decides to remove the entries.
+///
+/// Note that we cannot guarantee to call the onEvict()
+/// method for all elements so better to NOT use this storage for items which
+/// should be evicted.
 class WeakReferenceStorage<K, V> implements Storage<K, V> {
   final Map<K, CacheEntry<K, V>> _internalMap =
       LinkedHashMap<K, CacheEntry<K, V>>();
@@ -62,6 +66,21 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
 
   @override
   CacheEntry<K, V>? remove(K key) {
+    CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
+    if (oldEntry != null && oldEntry.value != null) {
+      if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);
+      return oldEntry;
+    }
+    oldEntry = _weakMap.target?.remove(key);
+    if (oldEntry != null && oldEntry.value != null) {
+      if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);
+      return oldEntry;
+    }
+    return oldEntry;
+  }
+
+  @override
+  CacheEntry<K, V>? removeInternal(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
       if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);

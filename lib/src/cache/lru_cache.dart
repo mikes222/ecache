@@ -4,7 +4,8 @@ import '../cache_entry.dart';
 import '../storage.dart';
 import 'abstract_cache.dart';
 
-/// Least recently used cache. Items which are not read recently gets evicted first
+/// Least recently used cache. Items which are not read for the longest period
+/// gets evicted first
 class LruCache<K, V> extends AbstractCache<K, V> {
   int lastUse = 0;
 
@@ -13,7 +14,7 @@ class LruCache<K, V> extends AbstractCache<K, V> {
 
   @override
   void onCapacity(K key, V element) {
-//    storage.entries.sort((a, b) => (a as LruCacheEntry).lastUse - (b as LruCacheEntry).lastUse);
+    if (length < capacity) return;
     // Iterate on all keys, so the eviction is O(n) to allow an insertion at O(1)
     LruCacheEntry<K, V> min = storage.entries
         .map((e) => e as LruCacheEntry<K, V>)

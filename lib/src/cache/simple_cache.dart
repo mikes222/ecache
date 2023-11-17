@@ -16,6 +16,7 @@ class SimpleCache<K, V> extends AbstractCache<K, V> {
 
   @override
   void onCapacity(K key, V element) {
+    if (length < capacity) return;
     storage.onCapacity(storage.keys.first);
   }
 }
