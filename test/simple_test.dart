@@ -62,7 +62,7 @@ void main() {
     expect(c.containsKey(5), equals(false));
     print(c.storage.toString());
   });
-  
+
   test('Test LFU eviction', () {
     int evicted = 0;
     AbstractCache<int, int> c = LfuCache<int, int>(
