@@ -1,7 +1,5 @@
-
 /// The interace for the cache
 abstract class Cache<K, V> {
-
   /// The maximum capacity of the cache. When more values will be added to the
   /// cache the least "desired" values will be removed. "desired" values are
   /// determined by the type of the cache. For example the lruCache will evict

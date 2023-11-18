@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import '../../ecache.dart';
 
 /// Abstract base class for caches
@@ -27,7 +25,6 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   /// Process the entry found in the storage before returning it. If this method
   /// returns null the entry is considered as expired and will not be returned
   /// to the caller.
-  @protected
   CacheEntry<K, V>? beforeGet(CacheEntry<K, V> entry) {
     return entry;
   }
@@ -42,11 +39,9 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   /// called if we want to
   /// insert another item denoted by [key] and [element] into the map. This
   /// method checks if the capacity is reached and eventually evicts old items.
-  @protected
   void onCapacity(K key, V element);
 
   /// internal [set]
-  @protected
   CacheEntry<K, V> createCacheEntry(K key, V element);
 
   /// return the number of element in the cache

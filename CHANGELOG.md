@@ -1,3 +1,9 @@
+## 2.0.3
+
+* Introducing WeakreferenceStorage
+* Added a bunch of documentation to the sourcecode
+* StatisticsStorage simplified
+
 ## 2.0.2
 
 * Improved performance
