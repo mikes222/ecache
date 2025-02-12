@@ -119,6 +119,9 @@ Otherwise the produce() method is called with the requested key and a future is 
 If another call is made with the same key where the future is not yet done the future of the 
 produce() method is returned again without calling the produce() method again.
 
+Note that you do not need to explicitly add the new item to the cache when producing a new item. 
+This will be done automatically.
+
 ## Author
 
 Original Author: 
