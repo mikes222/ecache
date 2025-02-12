@@ -1,8 +1,12 @@
 import '../../ecache.dart';
 
+typedef Future<V> Produce<K, V>(K key);
+
 /// Abstract base class for caches
 abstract class AbstractCache<K, V> extends Cache<K, V> {
   final Storage<K, V> storage;
+
+  final Map<K, _Producer<K, V>> _producers = {};
 
   AbstractCache({Storage<K, V>? storage, required int capacity})
       : this.storage = storage ?? SimpleStorage<K, V>(),
@@ -20,6 +24,26 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
     entry = beforeGet(entry);
 
     return entry?.value;
+  }
+
+  /// Returns the requested entry or calls the [produce] function to produce the
+  /// requested entry.
+  /// It is guaranteed that the producer will be executed only once for each
+  /// [key] for as long as the key is already requested or still in the cache.
+  Future<V> getOrProduce(K key, Produce<K, V> produce) async {
+    CacheEntry<K, V>? entry = storage[key];
+    if (entry != null) {
+      entry = beforeGet(entry);
+      if (entry != null) return entry.value!;
+    }
+    _Producer<K, V>? producer = _producers[key];
+    if (producer != null) {
+      return producer.future;
+    }
+
+    producer = _Producer(this, produce, key);
+    _producers[key] = producer;
+    return producer.start();
   }
 
   /// Process the entry found in the storage before returning it. If this method
@@ -59,5 +83,28 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   @override
   V? remove(K key) {
     return storage.remove(key)?.value;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+class _Producer<K, V> {
+  final AbstractCache<K, V> cache;
+
+  final Produce<K, V> produce;
+
+  final K key;
+
+  late Future<V> future;
+
+  _Producer(this.cache, this.produce, this.key);
+
+  Future<V> start() async {
+    future = produce(key);
+    await future.then((element) {
+      cache.set(key, element);
+      cache._producers.remove(key);
+    });
+    return future;
   }
 }

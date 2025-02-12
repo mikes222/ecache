@@ -1,3 +1,7 @@
+## 2.0.4
+
+* Introducing getOrProduce()
+
 ## 2.0.3
 
 * Introducing WeakreferenceStorage

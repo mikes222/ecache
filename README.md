@@ -12,13 +12,14 @@ It is inspired by [gcache](https://github.com/bluele/gcache)
 * Supports for weakreference storages (minimum capacity is guaranteed, additional items may be removed by garbage collection when not needed)
 * Supports expiration based on duration (expiration)
 * Callback for items to perform cleanup (Optional)
+* getOrProduce() method to return item from cache or produce the requested item.
 
 ## Installation
 
 Add to pubspec.yaml:
 ```yaml
 dependencies:
-  ecache: ^2.0.3
+  ecache: ^2.0.4
 ```
 
 ### Simple use case
@@ -94,6 +95,29 @@ depending if the garbage collection had been run and evicted the items.
 
 Note that we cannot guarantee to always call the evict-callback so do not use both eviction and 
 weak reference at the same cache.
+
+### get or produce item
+
+```dart
+import 'package:ecache/ecache.dart';
+
+void main() async {
+  Cache c = SimpleCache(storage: storage, capacity: 20);
+
+  int a1 = await c.getOrProduce(4, (int key) {
+    return Future.delayed(const Duration(seconds: 1), () {
+      return 40;
+    });
+  });
+
+}
+```
+
+If the item with the requested key (4) is already in cache it will be returned immediately. 
+Otherwise the produce() method is called with the requested key and a future is returned. 
+
+If another call is made with the same key where the future is not yet done the future of the 
+produce() method is returned again without calling the produce() method again.
 
 ## Author
 

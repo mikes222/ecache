@@ -65,6 +65,6 @@ class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
 
   @override
   String toString() {
-    return 'StatisticsStorage{_maxLength: $_maxLength, _added: $_added, _evicted: $_evicted, _read: $_read, _removed: $_removed, _removedCapacity: $_removedCapacity, _contains: $_contains}';
+    return 'StatisticsStorage{max ItemCount: $_maxLength, added: $_added, contains: $_contains, read: $_read, evicted: $_evicted, removed: $_removed, removed because of capacity: $_removedCapacity}';
   }
 }
