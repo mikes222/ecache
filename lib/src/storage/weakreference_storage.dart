@@ -97,8 +97,9 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
       if (_weakMap.target == null) _weakMap = WeakReference(LinkedHashMap<K, CacheEntry<K, V>>());
-      // it may be null again if we do not have enough memory, in this case, we do not save the old entry anymore
-      if (_weakMap.target != null) _weakMap.target![key] = oldEntry;
+      // it may be null again if we do not have enough memory, in this case, we do not save the old entry anymore.
+      // from time to time even with an if in front of the next clause target may be null. So replaced the if with a question mark
+      _weakMap.target?[key] = oldEntry;
     }
     return oldEntry;
   }

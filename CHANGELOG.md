@@ -1,3 +1,11 @@
+## 2.0.6
+
+* Bugfix for weak references
+
+## 2.0.5
+
+* Bugfix for weak references
+
 ## 2.0.4
 
 * Introducing getOrProduce()
