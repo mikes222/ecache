@@ -4,23 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('Test cache initialization', () {
-    AbstractCache cache =
-        SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
+    AbstractCache cache = SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
     expect(cache, isNotNull);
     print(cache.storage.toString());
   });
   //
   test('Test simple insert/get', () {
-    AbstractCache c =
-        SimpleCache<String, int>(storage: StatisticsStorage(), capacity: 20);
+    AbstractCache c = SimpleCache<String, int>(storage: StatisticsStorage(), capacity: 20);
 
     c.set('key', 42);
     expect(c.get('key'), equals(42));
     print(c.storage.toString());
   });
   test('Test simple Cache', () {
-    AbstractCache<int, int> c =
-        SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
+    AbstractCache<int, int> c = SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
     c[4] = 40;
     c[5] = 50;
     expect(c.get(4), equals(40));
@@ -28,8 +25,7 @@ void main() {
     print(c.storage.toString());
   });
   test('Test simple eviction', () {
-    AbstractCache<int, int> c =
-        SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    AbstractCache<int, int> c = SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 3);
     c[4] = 40;
     c[5] = 50;
     c[6] = 60;
@@ -45,8 +41,7 @@ void main() {
   });
 
   test('Test LRU eviction', () {
-    AbstractCache<int, int> c =
-        LruCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    AbstractCache<int, int> c = LruCache<int, int>(storage: StatisticsStorage(), capacity: 3);
     c[4] = 40;
     c[5] = 50;
     c[6] = 60;
@@ -85,9 +80,36 @@ void main() {
     print(c.storage.toString());
   });
 
+  test('Test expiration eviction', () async {
+    int evicted = 0;
+    AbstractCache<int, int> c = ExpirationCache<int, int>(
+        storage: StatisticsStorage(onEvict: (k, v) {
+          ++evicted;
+        }),
+        expiration: const Duration(seconds: 1),
+        capacity: 3);
+    c[4] = 40;
+    c[5] = 50;
+    c[6] = 60;
+
+    expect(c.get(4), equals(40));
+    expect(c.get(5), equals(50));
+    expect(c.get(6), equals(60));
+    expect(c.get(4), equals(40));
+    expect(c.get(6), equals(60));
+    await Future.delayed(const Duration(seconds: 1));
+    c[7] = 70;
+    expect(c.get(7), equals(70));
+    expect(c.containsKey(4), equals(false));
+    expect(c.containsKey(5), equals(false));
+    expect(c.containsKey(6), equals(false));
+    expect(c.containsKey(7), equals(true));
+    expect(evicted, equals(3));
+    print(c.storage.toString());
+  });
+
   test("test async producer", () async {
-    AbstractCache<int, int> c =
-        LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    AbstractCache<int, int> c = LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
 
     int a1 = await c.getOrProduce(4, (int key) {
       return Future.delayed(const Duration(seconds: 1), () {
@@ -113,8 +135,7 @@ void main() {
   });
 
   test("test async producer with async calls", () async {
-    AbstractCache<int, int> c =
-        LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    AbstractCache<int, int> c = LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
 
     int calls = 0;
     List<Future> futures = [];

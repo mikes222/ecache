@@ -9,18 +9,14 @@ import 'abstract_cache.dart';
 class LruCache<K, V> extends AbstractCache<K, V> {
   int lastUse = 0;
 
-  LruCache({required Storage<K, V>? storage, required int capacity})
-      : super(storage: storage, capacity: capacity);
+  LruCache({required Storage<K, V>? storage, required int capacity}) : super(storage: storage, capacity: capacity);
 
   @override
   void onCapacity(K key, V element) {
     if (length < capacity) return;
     // Iterate on all keys, so the eviction is O(n) to allow an insertion at O(1)
-    LruCacheEntry<K, V> min = storage.entries
-        .map((e) => e as LruCacheEntry<K, V>)
-        .reduce((element1, element2) =>
-            element1.lastUse < element2.lastUse ? element1 : element2);
-
+    MapEntry<K, CacheEntry<K, V>> min = storage.entries.entries
+        .reduce((element1, element2) => (element1.value as LruCacheEntry).lastUse < (element2.value as LruCacheEntry).lastUse ? element1 : element2);
     storage.onCapacity(min.key);
   }
 
@@ -31,7 +27,7 @@ class LruCache<K, V> extends AbstractCache<K, V> {
 
   @protected
   @override
-  CacheEntry<K, V>? beforeGet(CacheEntry<K, V> entry) {
+  CacheEntry<K, V>? beforeGet(K key, CacheEntry<K, V> entry) {
     (entry as LruCacheEntry).updateLastUse(++lastUse);
     return entry;
   }
@@ -42,7 +38,7 @@ class LruCache<K, V> extends AbstractCache<K, V> {
 class LruCacheEntry<K, V> extends CacheEntry<K, V> {
   int lastUse;
 
-  LruCacheEntry(K key, V? value, this.lastUse) : super(key, value);
+  LruCacheEntry(K key, V? value, this.lastUse) : super(value);
 
   void updateLastUse(int lastUse) {
     this.lastUse = lastUse;

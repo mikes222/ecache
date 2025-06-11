@@ -22,7 +22,21 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   WeakReferenceStorage({this.onEvict});
 
   @override
-  CacheEntry<K, V>? operator [](K key) {
+  void clear() {
+    if (onEvict != null) {
+      _internalMap.entries.forEach((element) {
+        if (element.value.value != null) onEvict!(element.key, element.value.value!);
+      });
+      _weakMap.target?.entries.forEach((element) {
+        if (element.value.value != null) onEvict!(element.key, element.value.value!);
+      });
+    }
+    _internalMap.clear();
+    _weakMap.target?.clear();
+  }
+
+  @override
+  CacheEntry<K, V>? get(K key) {
     var ce = _internalMap[key];
     if (ce != null) return ce;
     ce = _weakMap.target?[key];
@@ -30,35 +44,12 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   }
 
   @override
-  void clear() {
-    if (onEvict != null) {
-      _internalMap.values.forEach((element) {
-        if (element.value != null) onEvict!(element.key, element.value!);
-      });
-      _weakMap.target?.values.forEach((element) {
-        if (element.value != null) onEvict!(element.key, element.value!);
-      });
-    }
-    _internalMap.clear();
-  }
-
-  @override
-  CacheEntry<K, V>? get(K key) {
-    return this[key];
-  }
-
-  @override
-  void operator []=(K key, CacheEntry<K, V> value) {
+  Storage set(K key, CacheEntry<K, V> value) {
     CacheEntry<K, V>? oldEntry = _internalMap[key];
     if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvict!(oldEntry.key, oldEntry.value!);
+      onEvict!(key, oldEntry.value!);
     }
     _internalMap[key] = value;
-  }
-
-  @override
-  Storage set(K key, CacheEntry<K, V> value) {
-    this[key] = value;
     return this;
   }
 
@@ -66,12 +57,12 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   CacheEntry<K, V>? remove(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);
+      if (onEvict != null) onEvict!(key, oldEntry.value!);
       return oldEntry;
     }
     oldEntry = _weakMap.target?.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);
+      if (onEvict != null) onEvict!(key, oldEntry.value!);
       return oldEntry;
     }
     return oldEntry;
@@ -81,12 +72,12 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   CacheEntry<K, V>? removeInternal(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);
+      if (onEvict != null) onEvict!(key, oldEntry.value!);
       return oldEntry;
     }
     oldEntry = _weakMap.target?.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(oldEntry.key, oldEntry.value!);
+      if (onEvict != null) onEvict!(key, oldEntry.value!);
       return oldEntry;
     }
     return oldEntry;
@@ -118,5 +109,5 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   List<K> get keys => _internalMap.keys.toList();
 
   @override
-  List<CacheEntry<K, V>> get entries => _internalMap.values.toList();
+  Map<K, CacheEntry<K, V>> get entries => _internalMap;
 }

@@ -1,3 +1,5 @@
+typedef Future<V> Produce<K, V>(K key);
+
 /// The interace for the cache
 abstract class Cache<K, V> {
   /// The maximum capacity of the cache. When more values will be added to the
@@ -10,6 +12,14 @@ abstract class Cache<K, V> {
 
   /// return the element identified by [key] or null if the key is not found.
   V? get(K key);
+
+  /// Returns the requested entry or calls the [produce] function to produce the
+  /// requested entry.
+  /// It is guaranteed that the producer will be executed only once for each
+  /// [key] for as long as the key is already requested or still in the cache.
+  ///
+  /// Note that get() does NOT check if the entry is about to be produced.
+  Future<V> getOrProduce(K key, Produce<K, V> produce);
 
   /// add [element] in the cache at [key] and eventually deletes an old item
   void set(K key, V element);

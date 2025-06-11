@@ -51,7 +51,6 @@ class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
   CacheEntry<K, V>? onCapacity(K key) {
     CacheEntry<K, V>? ce = super.onCapacity(key);
     if (ce != null) {
-      --_removed;
       ++_removedCapacity;
     }
     return ce;
@@ -65,6 +64,6 @@ class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
 
   @override
   String toString() {
-    return 'StatisticsStorage{max ItemCount: $_maxLength, added: $_added, contains: $_contains, read: $_read, evicted: $_evicted, removed: $_removed, removed because of capacity: $_removedCapacity}';
+    return 'StatisticsStorage{current items: $length, max items: $_maxLength, added: $_added, contains: $_contains, read: $_read, evicted: $_evicted, removed: $_removed, removed because of capacity: $_removedCapacity}';
   }
 }

@@ -1,6 +1,6 @@
-import '../../ecache.dart';
+import 'dart:async';
 
-typedef Future<V> Produce<K, V>(K key);
+import '../../ecache.dart';
 
 /// Abstract base class for caches
 abstract class AbstractCache<K, V> extends Cache<K, V> {
@@ -15,41 +15,39 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   /// return the element identified by [key]
   @override
   V? get(K key) {
-    CacheEntry<K, V>? entry = storage[key];
+    CacheEntry<K, V>? entry = storage.get(key);
 
     if (entry == null) {
       return null;
     }
 
-    entry = beforeGet(entry);
+    entry = beforeGet(key, entry);
 
     return entry?.value;
   }
 
-  /// Returns the requested entry or calls the [produce] function to produce the
-  /// requested entry.
-  /// It is guaranteed that the producer will be executed only once for each
-  /// [key] for as long as the key is already requested or still in the cache.
+  @override
   Future<V> getOrProduce(K key, Produce<K, V> produce) async {
-    CacheEntry<K, V>? entry = storage[key];
+    CacheEntry<K, V>? entry = storage.get(key);
     if (entry != null) {
-      entry = beforeGet(entry);
+      entry = beforeGet(key, entry);
       if (entry != null) return entry.value!;
     }
     _Producer<K, V>? producer = _producers[key];
     if (producer != null) {
-      return producer.future;
+      return producer.completer.future;
     }
 
     producer = _Producer(this, produce, key);
     _producers[key] = producer;
-    return producer.start();
+    unawaited(producer.start());
+    return producer.completer.future;
   }
 
   /// Process the entry found in the storage before returning it. If this method
   /// returns null the entry is considered as expired and will not be returned
   /// to the caller.
-  CacheEntry<K, V>? beforeGet(CacheEntry<K, V> entry) {
+  CacheEntry<K, V>? beforeGet(K key, CacheEntry<K, V> entry) {
     return entry;
   }
 
@@ -57,7 +55,7 @@ abstract class AbstractCache<K, V> extends Cache<K, V> {
   @override
   void set(K key, V element) {
     onCapacity(key, element);
-    storage[key] = createCacheEntry(key, element);
+    storage.set(key, createCacheEntry(key, element));
   }
 
   /// called if we want to
@@ -95,16 +93,19 @@ class _Producer<K, V> {
 
   final K key;
 
-  late Future<V> future;
+  late Completer<V> completer = Completer();
 
   _Producer(this.cache, this.produce, this.key);
 
-  Future<V> start() async {
-    future = produce(key);
-    await future.then((element) {
-      cache.set(key, element);
+  Future<void> start() async {
+    try {
+      V value = await produce(key);
+      cache.set(key, value);
       cache._producers.remove(key);
-    });
-    return future;
+      completer.complete(value);
+    } catch (error, stacktrace) {
+      cache._producers.remove(key);
+      completer.completeError(error, stacktrace);
+    }
   }
 }

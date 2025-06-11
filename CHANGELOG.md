@@ -1,3 +1,9 @@
+## 2.0.7
+
+* key removed from cacheEntries to save memory
+* getOrProduce() handles exceptions now
+* minor performance improvement for expirationCache
+
 ## 2.0.6
 
 * Bugfix for weak references

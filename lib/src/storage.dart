@@ -29,12 +29,6 @@ abstract class Storage<K, V> {
   /// of salt
   int get length;
 
-  /// Same as [get]
-  CacheEntry<K, V>? operator [](K key);
-
-  /// Same as [set]
-  void operator []=(K key, CacheEntry<K, V> value);
-
   /// returns true if the item is available in the cache. Take this with a grain
   /// of salt since the item may be evicted before it will be retrieved. It is
   /// better to use [get] and check for null returns.
@@ -46,5 +40,5 @@ abstract class Storage<K, V> {
 
   /// Returns the available values. This violates the enclosing principle. Take
   /// the return values with caution
-  List<CacheEntry<K, V>> get entries;
+  Map<K, CacheEntry<K, V>> get entries;
 }

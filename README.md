@@ -26,7 +26,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ecache: ^2.0.6
+  ecache: ^2.0.7
 ```
 
 
@@ -115,7 +115,7 @@ If the key exists, the value is returned immediately.
 
 If not, the producer function is invoked and its result is cached.
 
-While a value is being produced, duplicate requests will receive the same Future.
+While a value is being produced, multiple requests for the same key will receive the same Future.
 
 ## Authors
 
