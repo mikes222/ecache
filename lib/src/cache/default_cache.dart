@@ -1,9 +1,5 @@
 import 'dart:async';
 
-import '../storage/simple_storage.dart';
-import '../strategy/abstract_strategy.dart';
-import '../strategy/simple_strategy.dart';
-
 import '../../ecache.dart';
 
 /// A generic, abstract base class for [Cache] implementations.
@@ -15,10 +11,10 @@ class DefaultCache<K, V> extends Cache<K, V> {
   @override
   final Storage<K, V> storage;
 
-    /// The strategy used for cache entry management and eviction.
+  /// The strategy used for cache entry management and eviction.
   final AbstractStrategy<K, V> strategy;
 
-    /// Creates a new [DefaultCache].
+  /// Creates a new [DefaultCache].
   ///
   /// A [capacity] for the cache must be provided.
   ///
@@ -33,7 +29,7 @@ class DefaultCache<K, V> extends Cache<K, V> {
     this.strategy.init(this.storage, capacity);
   }
 
-    /// Synchronously retrieves the value for the given [key].
+  /// Synchronously retrieves the value for the given [key].
   ///
   /// This method delegates to the configured [strategy]. It cannot be used to
   /// retrieve a [ProducerCacheEntry] because its value is a [Future].
@@ -44,7 +40,7 @@ class DefaultCache<K, V> extends Cache<K, V> {
     return entry?.value;
   }
 
-    /// Asynchronously retrieves the value for the given [key].
+  /// Asynchronously retrieves the value for the given [key].
   ///
   /// This method can handle [ProducerCacheEntry] by returning the [Future]
   /// that will complete with the produced value.
@@ -66,13 +62,20 @@ class DefaultCache<K, V> extends Cache<K, V> {
       }
       return entry.value!;
     }
+
     ProducerCacheEntry<K, V> producer = strategy.createProducerCacheEntry(key, produce);
     storage.set(key, producer);
     unawaited(producer.start(key));
-    return producer.completer.future;
+
+    try {
+      return await producer.completer.future;
+    } catch (e) {
+      storage.remove(key);
+      rethrow;
+    }
   }
 
-    /// Associates the [key] with the given [element] in the cache.
+  /// Associates the [key] with the given [element] in the cache.
   ///
   /// The configured [strategy] handles the creation of the [CacheEntry] and
   /// any necessary evictions if the cache is at capacity.
@@ -83,19 +86,19 @@ class DefaultCache<K, V> extends Cache<K, V> {
     storage.set(key, entry);
   }
 
-    /// Returns the number of entries in the cache.
+  /// Returns the number of entries in the cache.
   @override
   int get length => storage.length;
 
-    /// Returns `true` if the cache contains an entry for the given [key].
+  /// Returns `true` if the cache contains an entry for the given [key].
   @override
   bool containsKey(K key) => storage.containsKey(key);
 
-    /// Removes all entries from the cache.
+  /// Removes all entries from the cache.
   @override
   void clear() => storage.clear();
 
-    /// Removes the entry for the given [key] from the cache and returns its value.
+  /// Removes the entry for the given [key] from the cache and returns its value.
   @override
   V? remove(K key) {
     return storage.remove(key)?.value;

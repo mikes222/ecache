@@ -2,68 +2,52 @@ import 'dart:math';
 
 import '../../ecache.dart';
 
-/// Same as [SimpleStorage] but collects a few statistical data. The statistics
-/// can be retrieved by calling [toString]
+/// Same as [SimpleStorage] but collects a few statistical data.
 class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
   int _maxLength = 0;
+  int _hitCount = 0;
+  int _missCount = 0;
+  int _evictionCount = 0;
 
-  int _added = 0;
+  /// The number of times a requested item was found in the cache.
+  int get hitCount => _hitCount;
 
-  int _evicted = 0;
+  /// The number of times a requested item was not found in the cache.
+  int get missCount => _missCount;
 
-  int _read = 0;
-
-  int _removed = 0;
-
-  int _removedCapacity = 0;
-
-  int _contains = 0;
+  /// The number of times an item was evicted from the cache to make space.
+  int get evictionCount => _evictionCount;
 
   StatisticsStorage({OnEvict<K, V>? onEvict}) : super(onEvict: onEvict);
 
   @override
   CacheEntry<K, V>? get(K key) {
-    ++_read;
-    return super.get(key);
-  }
-
-  @override
-  onEvictInternal(K key, V value) {
-    ++_evicted;
-    return super.onEvictInternal(key, value);
+    final entry = super.get(key);
+    if (entry != null) {
+      _hitCount++;
+    } else {
+      _missCount++;
+    }
+    return entry;
   }
 
   @override
   void setInternal(K key, CacheEntry<K, V> value) {
-    ++_added;
     super.setInternal(key, value);
     _maxLength = max(_maxLength, length);
   }
 
   @override
-  CacheEntry<K, V>? remove(K key) {
-    CacheEntry<K, V>? ce = super.remove(key);
-    if (ce != null) ++_removed;
-    return ce;
-  }
-
-  @override
   CacheEntry<K, V>? onCapacity(K key) {
-    CacheEntry<K, V>? ce = super.onCapacity(key);
-    if (ce != null) {
-      ++_removedCapacity;
+    final entry = super.onCapacity(key);
+    if (entry != null) {
+      _evictionCount++;
     }
-    return ce;
-  }
-
-  @override
-  bool containsKey(K key) {
-    ++_contains;
-    return super.containsKey(key);
+    return entry;
   }
 
   @override
   String toString() {
-    return 'StatisticsStorage{current items: $length, max items: $_maxLength, added: $_added, contains: $_contains, read: $_read, evicted: $_evicted, removed: $_removed, removed because of capacity: $_removedCapacity}';
+    return 'StatisticsStorage{current: $length, max: $_maxLength, hits: $_hitCount, misses: $_missCount, evictions: $_evictionCount}';
   }
 }
