@@ -1,3 +1,7 @@
+/// A simple and flexible caching library for Dart.
+///
+/// This library provides a set of classes and interfaces to create caches
+/// with different storage mechanisms and eviction strategies.
 library ecache;
 
 export 'src/cache.dart';

@@ -1,49 +1,54 @@
-import 'package:ecache/ecache.dart';
+import 'storage.dart';
 
+/// A function that produces a value for a given [key].
+///
+/// This is used for caches that can fetch or compute values asynchronously.
 typedef Future<V> Produce<K, V>(K key);
 
-/// The interace for the cache
+/// The interface for a cache that stores key-value pairs.
+///
+/// Defines the core interface for a cache, providing methods for storing,
+/// retrieving, and managing cache entries.
 abstract class Cache<K, V> {
-  /// The underlying storage.
+  /// The underlying [Storage] mechanism used by the cache.
   Storage<K, V> get storage;
 
-  /// return the element identified by [key] or null if the key is not found.
+  /// Synchronously returns the element for the given [key], or `null` if the key is not found.
   V? get(K key);
 
+  /// Asynchronously returns the element for the given [key], or `null` if the key is not found.
   Future<V?> getAsync(K key);
 
-  /// Returns the requested entry or calls the [produce] function to produce the
-  /// requested entry.
-  /// It is guaranteed that the producer will be executed only once for each
-  /// [key] for as long as the key is already requested or still in the cache.
+  /// Returns the requested entry or calls the [produce] function to produce it.
   ///
-  /// Note that get() does NOT check if the entry is about to be produced.
+  /// It is guaranteed that the producer will be executed only once for each [key]
+  /// as long as the key is already requested or still in the cache.
   Future<V> getOrProduce(K key, Produce<K, V> produce);
 
-  /// add [element] in the cache at [key] and eventually deletes an old item
+  /// Associates the [key] with the given [element] in the cache.
+  /// If the cache is at capacity, an existing entry may be evicted.
   void set(K key, V element);
 
-  /// return the number of element in the cache. Take this with a grain of salt
+  /// Returns the number of entries in the cache.
   int get length;
 
-  /// Check if the cache contains a specific entry. It is better to use [get] and
-  /// check for null-returns
+  /// Returns `true` if the cache contains an entry for the given [key].
   bool containsKey(K key);
 
-  /// return the value at [key]. Same as [get]
-  dynamic operator [](K key) {
+  /// Returns the value for the given [key]. This is an alias for [get].
+  V? operator [](K key) {
     return get(key);
   }
 
-  /// assign [element] for [key]. Same as [set]
+  /// Associates the [key] with the given [element]. This is an alias for [set].
   void operator []=(K key, V element) {
     set(key, element);
   }
 
-  /// remove all the entry inside the cache and evicts all entries
+  /// Removes all entries from the cache.
   void clear();
 
-  /// Removes an entry from the cache. Returns null if the entry was not found.
-  /// Note that the entry which may be returned is already evicted.
+  /// Removes the entry for the given [key] and returns its value.
+  /// Returns `null` if the key was not found.
   V? remove(K key);
 }

@@ -1,24 +1,42 @@
 import 'dart:async';
 
-import 'package:ecache/src/strategy/abstract_strategy.dart';
-import 'package:ecache/src/strategy/simple_strategy.dart';
+import '../storage/simple_storage.dart';
+import '../strategy/abstract_strategy.dart';
+import '../strategy/simple_strategy.dart';
 
 import '../../ecache.dart';
 
-/// Abstract base class for caches
+/// A generic, abstract base class for [Cache] implementations.
+///
+/// This class provides the core caching logic, delegating entry management and
+/// eviction policies to a specified [AbstractStrategy]. It uses a [Storage]
+/// mechanism to hold the cache entries.
 class DefaultCache<K, V> extends Cache<K, V> {
   @override
   final Storage<K, V> storage;
 
+    /// The strategy used for cache entry management and eviction.
   final AbstractStrategy<K, V> strategy;
 
+    /// Creates a new [DefaultCache].
+  ///
+  /// A [capacity] for the cache must be provided.
+  ///
+  /// An optional [storage] mechanism can be provided. If not, a [SimpleStorage]
+  /// instance is used.
+  ///
+  /// An optional [strategy] can be provided. If not, a [SimpleStrategy]
+  /// instance is used.
   DefaultCache({Storage<K, V>? storage, required int capacity, AbstractStrategy<K, V>? strategy})
-      : this.storage = storage ?? SimpleStorage<K, V>(),
-        this.strategy = strategy ?? SimpleStrategy<K, V>() {
+      : storage = storage ?? SimpleStorage<K, V>(),
+        strategy = strategy ?? SimpleStrategy<K, V>() {
     this.strategy.init(this.storage, capacity);
   }
 
-  /// return the element identified by [key]
+    /// Synchronously retrieves the value for the given [key].
+  ///
+  /// This method delegates to the configured [strategy]. It cannot be used to
+  /// retrieve a [ProducerCacheEntry] because its value is a [Future].
   @override
   V? get(K key) {
     CacheEntry<K, V>? entry = strategy.get(key);
@@ -26,6 +44,11 @@ class DefaultCache<K, V> extends Cache<K, V> {
     return entry?.value;
   }
 
+    /// Asynchronously retrieves the value for the given [key].
+  ///
+  /// This method can handle [ProducerCacheEntry] by returning the [Future]
+  /// that will complete with the produced value.
+  @override
   Future<V?> getAsync(K key) async {
     CacheEntry<K, V>? entry = strategy.get(key);
     if (entry is ProducerCacheEntry<K, V>) {
@@ -49,7 +72,10 @@ class DefaultCache<K, V> extends Cache<K, V> {
     return producer.completer.future;
   }
 
-  /// add [element] in the cache at [key]
+    /// Associates the [key] with the given [element] in the cache.
+  ///
+  /// The configured [strategy] handles the creation of the [CacheEntry] and
+  /// any necessary evictions if the cache is at capacity.
   @override
   void set(K key, V element) {
     strategy.onCapacity(key, element);
@@ -57,20 +83,20 @@ class DefaultCache<K, V> extends Cache<K, V> {
     storage.set(key, entry);
   }
 
-  /// return the number of element in the cache
+    /// Returns the number of entries in the cache.
   @override
   int get length => storage.length;
 
-  // Check if the cache contains a specific entry
+    /// Returns `true` if the cache contains an entry for the given [key].
   @override
   bool containsKey(K key) => storage.containsKey(key);
 
-  /// remove all the entry inside the cache
+    /// Removes all entries from the cache.
   @override
   void clear() => storage.clear();
 
   @override
-  V? remove(K key) {
+    V? remove(K key) {
     return storage.remove(key)?.value;
   }
 }

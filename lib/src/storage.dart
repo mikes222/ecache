@@ -1,11 +1,12 @@
 import 'cache_entry.dart';
 
-///
-/// This method will be called if a value is removed from the storage. It can be used to dispose items
-///
+/// A callback function that is invoked when an entry is evicted from the cache.
 typedef void OnEvict<K, V>(K k, V v);
 
-/// The abstract interface for a storage class
+/// Defines the interface for a storage mechanism used by a [Cache].
+///
+/// A storage mechanism is responsible for storing and retrieving cache entries.
+/// It provides methods for adding, removing, and checking the existence of entries.
 abstract class Storage<K, V> {
   // returns the value denoted by [key] or null
   CacheEntry<K, V>? get(K key);
@@ -13,32 +14,31 @@ abstract class Storage<K, V> {
   // sets the key/value pair and eventually removes an old entry to keep the capacity
   Storage set(K key, CacheEntry<K, V> value);
 
-  /// removes the entry at position key. Returns the entry or null. Note that
+  /// removes the entry for the given [key] and returns the entry or null. Note that
   /// the entry is already evicted.
   CacheEntry<K, V>? remove(K key);
 
+  /// An internal method for removing an entry, which may be used by cache strategies.
   CacheEntry<K, V>? removeInternal(K key);
 
-  /// removes the entry denoted by [key]. This is called if the capacity is reached.
+  /// Returns the [CacheEntry] for the given [key], or `null` if the key is not found.
+  /// This is called if the capacity is reached.
   CacheEntry<K, V>? onCapacity(K key);
 
-  /// Clears the cache, evicts all entries
+  /// Removes all entries from the storage.
   void clear();
 
-  /// Returns the approx number of items in the cache. Take this with a grain
-  /// of salt
+  /// Returns the number of entries in the storage.
   int get length;
 
-  /// returns true if the item is available in the cache. Take this with a grain
-  /// of salt since the item may be evicted before it will be retrieved. It is
-  /// better to use [get] and check for null returns.
+  /// Returns `true` if the storage contains the given [key].
   bool containsKey(K key);
 
-  /// Returns the available keys. This violates the enclosing principle. Take
-  /// the return values with caution
-  List<K> get keys;
+  /// Returns an iterable of all keys in the storage.
+  Iterable<K> get keys;
 
-  /// Returns the available values. This violates the enclosing principle. Take
-  /// the return values with caution
+  /// Returns a map of all key-value pairs in the storage.
+  ///
+  /// Note: The underlying collection may change, so use with caution.
   Map<K, CacheEntry<K, V>> get entries;
 }

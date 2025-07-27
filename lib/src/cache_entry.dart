@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:ecache/src/cache.dart';
 
-/// A cache entry. Note that the key type is defined though not used in the default entry. It could be used for more complex entries
+/// Represents a basic entry in the cache, holding a value of type [V].
 class CacheEntry<K, V> {
   final V? value;
 
@@ -11,11 +11,15 @@ class CacheEntry<K, V> {
 
 //////////////////////////////////////////////////////////////////////////////
 
+/// A mixin for a [CacheEntry] that produces its value asynchronously.
 mixin ProducerCacheEntry<K, V> implements CacheEntry<K, V> {
+    /// The function that produces the value for this entry.
   late final Produce<K, V> produce;
 
+    /// A [Completer] that completes with the value when it has been produced.
   final Completer<V> completer = Completer();
 
+    /// Starts the asynchronous production of the value.
   Future<void> start(K key) async {
     try {
       V producerValue = await produce(key);

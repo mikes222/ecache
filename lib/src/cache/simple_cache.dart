@@ -1,11 +1,21 @@
-import 'package:ecache/ecache.dart';
-import 'package:ecache/src/strategy/simple_strategy.dart';
-
+import '../storage.dart';
+import '../strategy/simple_strategy.dart';
 import 'default_cache.dart';
 
-/// SimpleCache is a basic cache implementation without any particular logic
-/// than appending keys in the storage, and remove first inserted keys when
-/// storage is full
+/// A basic cache that uses a [SimpleStrategy] for entry management.
+///
+/// This cache implementation follows a simple First-In, First-Out (FIFO) eviction policy
+/// when the cache reaches its capacity. It relies on [DefaultCache] for the core
+/// caching logic and injects a [SimpleStrategy] to handle evictions.
 class SimpleCache<K, V> extends DefaultCache<K, V> {
-  SimpleCache({Storage<K, V>? storage, required int capacity}) : super(storage: storage, capacity: capacity, strategy: SimpleStrategy());
+  /// Creates a new [SimpleCache] with a specified [capacity].
+  ///
+  /// An optional [storage] mechanism can be provided. If none is supplied,
+  /// a default [SimpleStorage] will be used.
+  SimpleCache({Storage<K, V>? storage, required int capacity})
+      : super(
+          storage: storage,
+          capacity: capacity,
+          strategy: SimpleStrategy(),
+        );
 }
