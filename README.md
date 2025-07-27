@@ -1,51 +1,98 @@
 # Ecache
 
-**Ecache** is a lightweight and flexible in-memory cache library for Dart, supporting multiple eviction strategies and smart item handling.
-
-Inspired by [gcache](https://github.com/bluele/gcache), it provides an intuitive API for caching frequently accessed data with fine-grained control over eviction and memory management.
-
----
+A simple, flexible, and powerful caching library for Dart and Flutter, designed to be easy to use while providing a robust set of features for managing cached data.
 
 ## Features
 
-- 🧠 **Eviction Strategies**:
-    - LFU (Least Frequently Used)
-    - LRU (Least Recently Used)
-    - FIFO (First-In-First-Out)
-- 🕐 **Time-based expiration**
-- 🧹 **Eviction callbacks** (for cleanups, e.g. `dispose()`)
-- 🧪 **Weak reference storage** — keep minimum guaranteed entries while allowing GC-based cleanup
-- ⚙️ `getOrProduce()` to auto-generate and cache items on demand
-- 📊 Optional statistics tracking
+- **Multiple Caching Strategies**: Choose from several built-in eviction policies:
+  - **LRU (Least Recently Used)**: Evicts the least recently accessed items first.
+  - **LFU (Least Frequently Used)**: Evicts the least frequently accessed items first.
+  - **FIFO (First-In, First-Out)**: A simple strategy provided by `SimpleCache` that evicts the oldest items first.
+  - **Expiration-based**: Evicts items that have passed their expiration time.
+- **Pluggable Architecture**: The library is designed with a decoupled architecture, allowing you to mix and match components or create your own.
+- **Asynchronous Value Production**: Automatically fetch and cache values that are expensive to compute or retrieve, ensuring the production logic runs only once for a given key.
+- **Detailed Statistics**: Monitor cache performance with built-in statistics tracking for hits, misses, and evictions.
+- **Extensible Storage**: While a simple `Map`-based storage is provided, you can create your own storage solutions (e.g., for disk-based or database-backed caching).
+- **Null-Safe and Well-Documented**: The entire API is null-safe and comes with comprehensive documentation.
 
----
+## Getting Started
 
-## Installation
-
-Add to your `pubspec.yaml`:
+To use this library in your project, add it to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  ecache: ^2.0.7
+  ecache: ^latest
 ```
 
+Then, run `pub get` or `flutter pub get`.
 
-## Basic Usage
+## Usage
 
-```flutter
+### Creating a Simple Cache (FIFO)
+
+This is the most basic cache, which removes the oldest entry when the capacity is reached.
+
+```dart
 import 'package:ecache/ecache.dart';
 
 void main() {
-  final cache = SimpleCache(capacity: 20);
+  // Create a cache with a capacity of 10
+  final cache = SimpleCache<String, int>(capacity: 10);
 
-  cache.set('key', 42);
-  print(cache.get('key')); // 42
-  print(cache.containsKey('unknown_key')); // false
-  print(cache.get('unknown_key')); // null
+  // Set and get values
+  cache.set('a', 1);
+  final value = cache.get('a'); // returns 1
+  print('Value for key "a": $value');
 }
 ```
 
-## Eviction with Cleanup
+### Using a Least Recently Used (LRU) Cache
+
+This cache is ideal when you want to keep the most recently accessed items.
+
+```dart
+import 'package:ecache/ecache.dart';
+
+void main() {
+  final cache = LruCache<String, String>(capacity: 2);
+
+  cache.set('user:1', 'Alice');
+  cache.set('user:2', 'Bob');
+
+  // Accessing 'user:1' makes it the most recently used
+  cache.get('user:1');
+
+  // Adding a new item will evict the least recently used ('user:2')
+  cache.set('user:3', 'Charlie');
+
+  print(cache.containsKey('user:2')); // false
+}
+```
+
+### Caching with an Expiration Time
+
+Set a default duration for all entries in the cache.
+
+```dart
+import 'package:ecache/ecache.dart';
+
+void main() async {
+  final cache = ExpirationCache<String, String>(
+    capacity: 10,
+    duration: const Duration(seconds: 5),
+  );
+
+  cache.set('session', 'active');
+  print(cache.get('session')); // 'active'
+
+  // Wait for the entry to expire
+  await Future.delayed(const Duration(seconds: 6));
+
+  print(cache.get('session')); // null
+}
+```
+
+### Eviction with Cleanup
 
 ```flutter
 import 'package:ecache/ecache.dart';
@@ -63,7 +110,7 @@ void main() {
 }
 ```
 
-## Get Statistics
+### Get Statistics
 
 ```flutter
 import 'package:ecache/ecache.dart';
@@ -80,8 +127,7 @@ void main() {
 }
 ```
 
-
-## Weak References
+### Weak References
 
 ```flutter
 import 'package:ecache/ecache.dart';
@@ -95,39 +141,49 @@ void main() {
 ⚠️ Weak references allow garbage collection of older items beyond the guaranteed capacity.
 Do not use eviction callbacks and weak storage together — callbacks may not fire when GC clears items.
 
-## Get or Produce Value
+### Asynchronous Value Production
 
-```flutter
+Use `getOrProduce` to fetch and cache data from a database or a network API.
+
+```dart
 import 'package:ecache/ecache.dart';
 
+// A function that simulates fetching data from a network
+Future<String> fetchUserData(String userId) async {
+  print('Fetching data for $userId...');
+  await Future.delayed(const Duration(seconds: 2)); // Simulate network latency
+  return 'User data for $userId';
+}
+
 void main() async {
-  final cache = SimpleCache(capacity: 20);
+  final cache = SimpleCache<String, String>(capacity: 5);
 
-  final result = await cache.getOrProduce(4, (key) {
-    return Future.delayed(Duration(seconds: 1), () => 40);
-  });
+  // The first call will trigger the fetchUserData function
+  final data1 = await cache.getOrProduce('user:123', fetchUserData);
+  print(data1);
 
-  print(result); // 40
+  // The second call will return the cached data instantly
+  final data2 = await cache.getOrProduce('user:123', fetchUserData);
+  print(data2);
 }
 ```
 
-If the key exists, the value is returned immediately.
+## Architecture
 
-If not, the producer function is invoked and its result is cached.
+The library is built on three core components:
 
-While a value is being produced, multiple requests for the same key will receive the same Future.
+- **`Cache`**: The main interface that developers interact with. Concrete implementations like `SimpleCache`, `LruCache`, and `LfuCache` provide the caching logic.
+- **`Storage`**: An abstraction for the underlying key-value store. The default is `SimpleStorage`, which uses a `LinkedHashMap`, but custom implementations can be created.
+- **`Strategy`**: The logic that governs how and when entries are evicted from the cache. Each cache type uses a corresponding strategy (e.g., `LruStrategy`).
 
-## Authors
+This decoupled design allows for great flexibility in composing caches that fit specific needs.
 
-Original concept: Kevin Platel
+## Contributing
 
-Dart implementation: Michael Schwartz
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
 
 ## License
 
-MIT – see LICENSE
+This library is licensed under the MIT License. See the `LICENSE` file for details.
 
-## ❤️ Contribute
 
-Contributions, bug reports and feature suggestions are welcome on GitHub.
-Let’s build smarter caching together!

@@ -95,8 +95,9 @@ class DefaultCache<K, V> extends Cache<K, V> {
   @override
   void clear() => storage.clear();
 
+    /// Removes the entry for the given [key] from the cache and returns its value.
   @override
-    V? remove(K key) {
+  V? remove(K key) {
     return storage.remove(key)?.value;
   }
 }

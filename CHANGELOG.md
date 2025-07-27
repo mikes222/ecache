@@ -1,3 +1,8 @@
+## 2.0.8
+
+* Introducing Strategies to being able to exchange the underlying default_cache if necessary
+* Updated documentation
+
 ## 2.0.7
 
 * key removed from cacheEntries to save memory

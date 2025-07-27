@@ -63,7 +63,6 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   }
 
   /// An internal method to set a value in the map.
-  /// An internal method to set a value in the map.
   void setInternal(K key, CacheEntry<K, V> value) {
     _internalMap[key] = value;
   }
@@ -80,7 +79,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
     return oldEntry;
   }
 
-  /// Removes a cache entry by its key, without calling [onEvict].
+  /// Removes a cache entry by its key.
+  /// If [onEvict] is set, it is called for the removed entry.
   @override
   CacheEntry<K, V>? removeInternal(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
@@ -90,7 +90,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
     return oldEntry;
   }
 
-  /// Removes a cache entry by its key, without calling [onEvict].
+  /// Removes a cache entry by its key when the cache capacity is reached.
+  /// If [onEvict] is set, it is called for the removed entry.
   @override
   CacheEntry<K, V>? onCapacity(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
@@ -111,8 +112,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
 
   @override
 
-  /// Returns a list of all cache keys.
-  List<K> get keys => _internalMap.keys.toList();
+  /// Returns an iterable of all cache keys.
+  Iterable<K> get keys => _internalMap.keys;
 
   @override
 

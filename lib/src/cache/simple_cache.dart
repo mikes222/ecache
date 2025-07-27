@@ -16,6 +16,6 @@ class SimpleCache<K, V> extends DefaultCache<K, V> {
       : super(
           storage: storage,
           capacity: capacity,
-          strategy: SimpleStrategy(),
+          strategy: SimpleStrategy<K, V>(),
         );
 }
