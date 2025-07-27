@@ -1,17 +1,16 @@
+import 'package:ecache/ecache.dart';
+
 typedef Future<V> Produce<K, V>(K key);
 
 /// The interace for the cache
 abstract class Cache<K, V> {
-  /// The maximum capacity of the cache. When more values will be added to the
-  /// cache the least "desired" values will be removed. "desired" values are
-  /// determined by the type of the cache. For example the lruCache will evict
-  /// the item wich was not used for the longest time.
-  final int capacity;
-
-  Cache({required this.capacity}) : assert(capacity > 0);
+  /// The underlying storage.
+  Storage<K, V> get storage;
 
   /// return the element identified by [key] or null if the key is not found.
   V? get(K key);
+
+  Future<V?> getAsync(K key);
 
   /// Returns the requested entry or calls the [produce] function to produce the
   /// requested entry.
