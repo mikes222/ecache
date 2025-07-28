@@ -54,7 +54,7 @@ class DefaultCache<K, V> extends Cache<K, V> {
   }
 
   @override
-  Future<V> getOrProduce(K key, Produce<K, V> produce) async {
+  Future<V> getOrProduce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]) async {
     CacheEntry<K, V>? entry = storage.get(key);
     if (entry != null) {
       if (entry is ProducerCacheEntry<K, V>) {
@@ -63,9 +63,32 @@ class DefaultCache<K, V> extends Cache<K, V> {
       return entry.value!;
     }
 
+    strategy.onCapacity(key);
     ProducerCacheEntry<K, V> producer = strategy.createProducerCacheEntry(key, produce);
     storage.set(key, producer);
-    unawaited(producer.start(key));
+    unawaited(producer.start(key, timeoutMilliseconds));
+
+    try {
+      return await producer.completer.future;
+    } catch (e) {
+      storage.remove(key);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<V> produce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]) async {
+    CacheEntry<K, V>? entry = storage.get(key);
+    if (entry != null) {
+      if (entry is ProducerCacheEntry<K, V>) {
+        return entry.completer.future;
+      }
+    }
+
+    strategy.onCapacity(key);
+    ProducerCacheEntry<K, V> producer = strategy.createProducerCacheEntry(key, produce);
+    storage.set(key, producer);
+    unawaited(producer.start(key, timeoutMilliseconds));
 
     try {
       return await producer.completer.future;
@@ -81,7 +104,7 @@ class DefaultCache<K, V> extends Cache<K, V> {
   /// any necessary evictions if the cache is at capacity.
   @override
   void set(K key, V element) {
-    strategy.onCapacity(key, element);
+    strategy.onCapacity(key);
     CacheEntry<K, V>? entry = strategy.createCacheEntry(key, element);
     storage.set(key, entry);
   }

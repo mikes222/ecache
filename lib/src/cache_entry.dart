@@ -13,16 +13,18 @@ class CacheEntry<K, V> {
 
 /// A mixin for a [CacheEntry] that produces its value asynchronously.
 mixin ProducerCacheEntry<K, V> implements CacheEntry<K, V> {
-    /// The function that produces the value for this entry.
+  /// The function that produces the value for this entry.
   late final Produce<K, V> produce;
 
-    /// A [Completer] that completes with the value when it has been produced.
+  /// A [Completer] that completes with the value when it has been produced.
   final Completer<V> completer = Completer();
 
-    /// Starts the asynchronous production of the value.
-  Future<void> start(K key) async {
+  /// Starts the asynchronous production of the value.
+  Future<void> start(K key, int timeoutMilliseconds) async {
     try {
-      V producerValue = await produce(key);
+      Future future = produce(key);
+      future = future.timeout(Duration(milliseconds: timeoutMilliseconds));
+      V producerValue = await future;
       completer.complete(producerValue);
     } catch (error, stacktrace) {
       completer.completeError(error, stacktrace);

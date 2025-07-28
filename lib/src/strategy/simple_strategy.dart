@@ -6,16 +6,12 @@ import '../../ecache.dart';
 /// When the cache reaches its capacity, the oldest entry (the first one that was
 /// inserted) is removed to make space for a new one.
 class SimpleStrategy<K, V> extends AbstractStrategy<K, V> {
-  @override
-
   /// Evicts the oldest entry if the cache is at capacity.
   @override
-  void onCapacity(K key, V element) {
+  void onCapacity(K key) {
     if (storage.length < capacity) return;
     storage.onCapacity(storage.keys.first);
   }
-
-  @override
 
   /// Creates a standard [CacheEntry] with the given value.
   @override
@@ -23,15 +19,11 @@ class SimpleStrategy<K, V> extends AbstractStrategy<K, V> {
     return CacheEntry(value);
   }
 
-  @override
-
   /// Creates a [SimpleProducerCacheEntry] for asynchronous value production.
   @override
   ProducerCacheEntry<K, V> createProducerCacheEntry(K key, Produce<K, V> produce) {
     return SimpleProducerCacheEntry(produce);
   }
-
-  @override
 
   /// Retrieves an entry from storage without any additional processing.
   @override

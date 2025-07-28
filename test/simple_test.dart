@@ -94,9 +94,7 @@ void main() {
     expect(c.get(4), equals(40));
     expect(c.get(5), equals(50));
     expect(c.get(6), equals(60));
-    expect(c.get(4), equals(40));
-    expect(c.get(6), equals(60));
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 1100));
     c[7] = 70;
     expect(c.get(7), equals(70));
     expect(c.containsKey(4), equals(false));

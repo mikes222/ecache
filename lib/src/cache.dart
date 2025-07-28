@@ -19,11 +19,35 @@ abstract class Cache<K, V> {
   /// Asynchronously returns the element for the given [key], or `null` if the key is not found.
   Future<V?> getAsync(K key);
 
-  /// Returns the requested entry or calls the [produce] function to produce it.
+  /// Retrieves the value associated with [key] from the cache, or generates it if it is not present.
   ///
-  /// It is guaranteed that the producer will be executed only once for each [key]
-  /// as long as the key is already requested or still in the cache.
-  Future<V> getOrProduce(K key, Produce<K, V> produce);
+  /// If the cache contains an entry for [key], its value is returned.
+  /// If the entry is a [ProducerCacheEntry] (meaning a value is already being produced),
+  /// this method returns the existing [Future] that will complete with the produced value.
+  ///
+  /// If the key is not in the cache, the [produce] function is called to generate the value.
+  /// The `produce` function is only called once, even if `getOrProduce` is called multiple
+  /// times for the same key while the value is being generated.
+  ///
+  /// The optional [timeoutMilliseconds] parameter specifies the maximum time to wait for the
+  /// [produce] function to complete. If the timeout is exceeded, a [TimeoutException] is thrown,
+  /// and the key is not cached. The default timeout is 60,000 milliseconds (60 seconds).
+  ///
+  /// If the [produce] function throws any other error, the key is also not cached, and the
+  /// `Future` returned by this method completes with that error.
+  ///
+  /// Example:
+  /// ```dart
+  /// final value = await cache.getOrProduce('user:123', (key) async {
+  ///   // Fetch user data from a database or API
+  ///   return await fetchUserData(key);
+  /// });
+  /// ```
+  Future<V> getOrProduce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]);
+
+  /// Generates the value for the given [key] and stores it in the cache. If the produce method is
+  /// already in progress, its completes is returned. If the cache is at capacity, an existing entry may be evicted.
+  Future<V> produce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]);
 
   /// Associates the [key] with the given [element] in the cache.
   /// If the cache is at capacity, an existing entry may be evicted.

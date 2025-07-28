@@ -1,5 +1,4 @@
 import 'package:ecache/ecache.dart';
-import 'package:ecache/src/strategy/abstract_strategy.dart';
 
 /// A cache which evicts entries after a certain amount of time
 class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
@@ -14,8 +13,7 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
         this.expiration = expiration.inMilliseconds;
 
   @override
-  void onCapacity(K key, V element) {
-    if (storage.length < capacity) return;
+  void onCapacity(K key) {
     int toRemove = DateTime.now().millisecondsSinceEpoch - expiration;
     if (lastCleanup > toRemove) return;
     Iterable<MapEntry<K, CacheEntry<K, V>>> itemsToRemove =
@@ -66,10 +64,5 @@ class ExpirationCacheEntry<K, V> extends CacheEntry<K, V> {
 class ExpirationProducerCacheEntry<K, V> extends ExpirationCacheEntry<K, V> with ProducerCacheEntry<K, V> {
   ExpirationProducerCacheEntry(K key, Produce<K, V> produce) : super(key, null) {
     this.produce = produce;
-  }
-
-  @override
-  set value(V? value) {
-    this.value = value;
   }
 }

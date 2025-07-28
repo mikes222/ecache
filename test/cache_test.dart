@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ecache/ecache.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -71,6 +73,7 @@ void main() {
       await Future.delayed(Duration.zero);
       expect(cache.containsKey('a'), isFalse);
     });
+
     test('getOrProduce() calls producer only once with concurrent requests', () async {
       final cache = SimpleCache<String, int>(capacity: 5);
       int producerCallCount = 0;
@@ -96,6 +99,34 @@ void main() {
       expect(results, [42, 42, 42]);
       // The value should be cached
       expect(await cache.getAsync('a'), 42);
+    });
+
+    test('getOrProduce() succeeds when producer is faster than timeout', () async {
+      final cache = SimpleCache<String, int>(capacity: 1);
+      final value = await cache.getOrProduce('a', (key) async {
+        await Future.delayed(const Duration(milliseconds: 50));
+        return 1;
+      }, 100);
+
+      expect(value, 1);
+      expect(await cache.getAsync('a'), 1);
+    });
+
+    test('getOrProduce() throws TimeoutException when producer is slower than timeout', () async {
+      final cache = SimpleCache<String, int>(capacity: 1);
+
+      try {
+        await cache.getOrProduce('a', (key) async {
+          await Future.delayed(const Duration(milliseconds: 200));
+          return 1;
+        }, 100);
+        fail('should have thrown a TimeoutException');
+      } catch (e) {
+        expect(e, isA<TimeoutException>());
+      }
+
+      // Ensure the key is not cached after a timeout
+      expect(cache.containsKey('a'), isFalse);
     });
   });
 }

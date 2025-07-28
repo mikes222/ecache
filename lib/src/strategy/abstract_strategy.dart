@@ -20,7 +20,7 @@ abstract class AbstractStrategy<K, V> {
   ///
   /// This method is responsible for checking if the cache is at capacity and
   /// evicting one or more entries if necessary.
-  void onCapacity(K key, V element);
+  void onCapacity(K key);
 
   /// Creates a standard [CacheEntry] for the given [key] and [element].
   CacheEntry<K, V> createCacheEntry(K key, V element);

@@ -1,10 +1,9 @@
 import 'package:ecache/ecache.dart';
-import 'package:ecache/src/strategy/abstract_strategy.dart';
 
 /// Least frequently used cache. Items which are not used often gets evicted first
 class LfuStrategy<K, V> extends AbstractStrategy<K, V> {
   @override
-  void onCapacity(K key, V element) {
+  void onCapacity(K key) {
     if (storage.length < capacity) return;
     // Iterate on all keys, so the eviction is O(n) to allow an insertion at O(1)
     MapEntry<K, CacheEntry<K, V>> min = storage.entries.entries
