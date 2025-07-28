@@ -18,7 +18,7 @@ class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
   /// The number of times an item was evicted from the cache to make space.
   int get evictionCount => _evictionCount;
 
-  StatisticsStorage({OnEvict<K, V>? onEvict}) : super(onEvict: onEvict);
+  StatisticsStorage({super.onEvict});
 
   @override
   CacheEntry<K, V>? get(K key) {

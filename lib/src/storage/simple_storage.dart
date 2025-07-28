@@ -11,7 +11,7 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// The underlying [LinkedHashMap] that stores the cache entries.
   ///
   /// This map stores cache entries, where each key is associated with a [CacheEntry] object.
-  final Map<K, CacheEntry<K, V>> _internalMap = LinkedHashMap<K, CacheEntry<K, V>>();
+  final Map<K, CacheEntry<K, V>> _internalMap = <K, CacheEntry<K, V>>{};
 
   /// An optional callback that is invoked when an entry is evicted from the cache.
   ///
@@ -30,9 +30,9 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// If [onEvict] is set, it is called for each removed entry.
   void clear() {
     if (onEvict != null) {
-      _internalMap.entries.forEach((action) {
+      for (var action in _internalMap.entries) {
         if (action.value.value != null) onEvictInternal(action.key, action.value.value!);
-      });
+      }
     }
     _internalMap.clear();
   }
@@ -47,6 +47,7 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// Retrieves a cache entry by its key.
   ///
   /// Returns the cache entry associated with the given key, or null if no entry exists.
+  @override
   CacheEntry<K, V>? get(K key) => _internalMap[key];
 
   @override

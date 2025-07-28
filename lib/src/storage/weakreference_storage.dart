@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import '../cache_entry.dart';
 import '../storage.dart';
 
@@ -11,9 +9,9 @@ import '../storage.dart';
 /// method for all elements so better to NOT use this storage for items which
 /// should be evicted.
 class WeakReferenceStorage<K, V> implements Storage<K, V> {
-  final Map<K, CacheEntry<K, V>> _internalMap = LinkedHashMap<K, CacheEntry<K, V>>();
+  final Map<K, CacheEntry<K, V>> _internalMap = <K, CacheEntry<K, V>>{};
 
-  WeakReference<Map<K, CacheEntry<K, V>>> _weakMap = WeakReference(LinkedHashMap<K, CacheEntry<K, V>>());
+  WeakReference<Map<K, CacheEntry<K, V>>> _weakMap = WeakReference(<K, CacheEntry<K, V>>{});
 
   /// if onEvict is set that method is called whenever an entry is removed from the cache.
   /// At the time the method is called the entry is already removed.
@@ -24,9 +22,9 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   @override
   void clear() {
     if (onEvict != null) {
-      _internalMap.entries.forEach((element) {
+      for (var element in _internalMap.entries) {
         if (element.value.value != null) onEvict!(element.key, element.value.value!);
-      });
+      }
       _weakMap.target?.entries.forEach((element) {
         if (element.value.value != null) onEvict!(element.key, element.value.value!);
       });
@@ -87,7 +85,7 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   CacheEntry<K, V>? onCapacity(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
     if (oldEntry != null && oldEntry.value != null) {
-      if (_weakMap.target == null) _weakMap = WeakReference(LinkedHashMap<K, CacheEntry<K, V>>());
+      if (_weakMap.target == null) _weakMap = WeakReference(<K, CacheEntry<K, V>>{});
       // it may be null again if we do not have enough memory, in this case, we do not save the old entry anymore.
       // from time to time even with an if in front of the next clause target may be null. So replaced the if with a question mark
       _weakMap.target?[key] = oldEntry;

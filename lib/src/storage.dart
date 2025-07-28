@@ -1,7 +1,7 @@
 import 'cache_entry.dart';
 
 /// A callback function that is invoked when an entry is evicted from the cache.
-typedef void OnEvict<K, V>(K k, V v);
+typedef OnEvict<K, V> = void Function(K k, V v);
 
 /// Defines the interface for a storage mechanism used by a [Cache].
 ///

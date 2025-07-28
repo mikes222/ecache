@@ -109,6 +109,17 @@ class DefaultCache<K, V> extends Cache<K, V> {
     storage.set(key, entry);
   }
 
+  @override
+  void setMap(Map<K, V> elements) {
+    assert(elements.isNotEmpty, "Cannot set an empty map");
+    strategy.onCapacity(elements.keys.first);
+    elements.forEach((key, value) {
+      CacheEntry<K, V>? entry = strategy.createCacheEntry(key, value);
+      storage.set(key, entry);
+    });
+    strategy.onCapacity(elements.keys.last);
+  }
+
   /// Returns the number of entries in the cache.
   @override
   int get length => storage.length;

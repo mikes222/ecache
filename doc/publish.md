@@ -10,7 +10,7 @@
 [ ] Analyze package quality with pana (https://pub.dev/packages/pana)
 
     flutter pub global activate pana
-    C:\Users\Mike\AppData\Local\Pub\Cache\bin\pana
+    pana
 
 (git must be installed and accessible via path)
 

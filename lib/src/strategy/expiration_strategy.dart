@@ -54,9 +54,7 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
 class ExpirationCacheEntry<K, V> extends CacheEntry<K, V> {
   final int insertTime;
 
-  ExpirationCacheEntry(K key, V? value)
-      : insertTime = DateTime.now().millisecondsSinceEpoch,
-        super(value);
+  ExpirationCacheEntry(K key, super.value) : insertTime = DateTime.now().millisecondsSinceEpoch;
 }
 
 /////////////////////////////////////////////////////////////////////////////

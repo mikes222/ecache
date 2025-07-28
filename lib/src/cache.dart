@@ -3,7 +3,7 @@ import 'storage.dart';
 /// A function that produces a value for a given [key].
 ///
 /// This is used for caches that can fetch or compute values asynchronously.
-typedef Future<V> Produce<K, V>(K key);
+typedef Produce<K, V> = Future<V> Function(K key);
 
 /// The interface for a cache that stores key-value pairs.
 ///
@@ -52,6 +52,11 @@ abstract class Cache<K, V> {
   /// Associates the [key] with the given [element] in the cache.
   /// If the cache is at capacity, an existing entry may be evicted.
   void set(K key, V element);
+
+  /// stores a map of elements in the cache. If the cache is at capacity, existing entries may be evicted.
+  /// This is a small performance gain over calling set multiple times because the capacity-verification is done only once before
+  /// filling the cache and once after filling the cache. Usually it does not justify the overhead of creating a map just for this purpose.
+  void setMap(Map<K, V> elements);
 
   /// Returns the number of entries in the cache.
   int get length;

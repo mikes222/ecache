@@ -40,7 +40,7 @@ class LruStrategy<K, V> extends AbstractStrategy<K, V> {
 class LruCacheEntry<K, V> extends CacheEntry<K, V> {
   int lastUse;
 
-  LruCacheEntry(K key, V? value, this.lastUse) : super(value);
+  LruCacheEntry(K key, super.value, this.lastUse);
 
   void updateLastUse(int lastUse) {
     this.lastUse = lastUse;

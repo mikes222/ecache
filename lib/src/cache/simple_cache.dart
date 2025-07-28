@@ -1,4 +1,3 @@
-import '../storage.dart';
 import '../strategy/simple_strategy.dart';
 import 'default_cache.dart';
 
@@ -12,10 +11,8 @@ class SimpleCache<K, V> extends DefaultCache<K, V> {
   ///
   /// An optional [storage] mechanism can be provided. If none is supplied,
   /// a default [SimpleStorage] will be used.
-  SimpleCache({Storage<K, V>? storage, required int capacity})
+  SimpleCache({super.storage, required super.capacity})
       : super(
-          storage: storage,
-          capacity: capacity,
           strategy: SimpleStrategy<K, V>(),
         );
 }

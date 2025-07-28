@@ -36,7 +36,7 @@ class LfuStrategy<K, V> extends AbstractStrategy<K, V> {
 class LfuCacheEntry<K, V> extends CacheEntry<K, V> {
   int use = 0;
 
-  LfuCacheEntry(K key, V? value) : super(value);
+  LfuCacheEntry(K key, super.value);
 }
 
 /////////////////////////////////////////////////////////////////////////////
