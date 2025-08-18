@@ -1,3 +1,7 @@
+## 2.0.9
+
+* Dart-support
+
 ## 2.0.8
 
 * Introducing Strategies to being able to exchange the underlying default_cache if necessary

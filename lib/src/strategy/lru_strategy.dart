@@ -1,5 +1,4 @@
 import 'package:ecache/ecache.dart';
-import 'package:flutter/cupertino.dart';
 
 /// Least recently used cache. Items which are not read for the longest period
 /// gets evicted first
@@ -25,7 +24,6 @@ class LruStrategy<K, V> extends AbstractStrategy<K, V> {
     return LruProducerCacheEntry(key, produce, ++lastUse);
   }
 
-  @protected
   @override
   CacheEntry<K, V>? get(K key) {
     CacheEntry<K, V>? entry = storage.get(key);

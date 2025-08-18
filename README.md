@@ -94,7 +94,7 @@ void main() async {
 
 ### Eviction with Cleanup
 
-```flutter
+```dart
 import 'package:ecache/ecache.dart';
 
 void main() {
@@ -112,7 +112,7 @@ void main() {
 
 ### Get Statistics
 
-```flutter
+```dart
 import 'package:ecache/ecache.dart';
 
 void main() {
@@ -129,7 +129,7 @@ void main() {
 
 ### Weak References
 
-```flutter
+```dart
 import 'package:ecache/ecache.dart';
 
 void main() {
