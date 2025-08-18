@@ -2,7 +2,7 @@ import 'package:ecache/ecache.dart';
 
 /// A cache which evicts entries after a certain amount of time
 class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
-  final int expiration;
+  final int _expiration;
 
   int lastCleanup;
 
@@ -10,11 +10,11 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
       : assert(!expiration.isNegative),
         assert(expiration.inMilliseconds > 0),
         lastCleanup = DateTime.now().millisecondsSinceEpoch,
-        this.expiration = expiration.inMilliseconds;
+        _expiration = expiration.inMilliseconds;
 
   @override
   void onCapacity(K key) {
-    int toRemove = DateTime.now().millisecondsSinceEpoch - expiration;
+    int toRemove = DateTime.now().millisecondsSinceEpoch - _expiration;
     if (lastCleanup > toRemove) return;
     Iterable<MapEntry<K, CacheEntry<K, V>>> itemsToRemove =
         storage.entries.entries.where((element) => (element.value as ExpirationCacheEntry).insertTime < toRemove);
@@ -40,7 +40,7 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
   CacheEntry<K, V>? get(K key) {
     CacheEntry<K, V>? entry = storage.get(key);
     if (entry == null) return null;
-    if ((entry as ExpirationCacheEntry).insertTime < DateTime.now().millisecondsSinceEpoch - expiration) {
+    if ((entry as ExpirationCacheEntry).insertTime < DateTime.now().millisecondsSinceEpoch - _expiration) {
       // do not call onCapacity because if the entry is expired we do not want to keep it anyway
       storage.removeInternal(key);
       return null;
