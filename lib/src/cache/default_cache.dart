@@ -98,6 +98,18 @@ class DefaultCache<K, V> extends Cache<K, V> {
     }
   }
 
+  @override
+  V getOrProduceSync(K key, ProduceSync<K, V> produce) {
+    CacheEntry<K, V>? entry = storage.get(key);
+    if (entry != null) {
+      return entry.value!;
+    }
+
+    V value = produce(key);
+    set(key, value);
+    return value;
+  }
+
   /// Associates the [key] with the given [element] in the cache.
   ///
   /// The configured [strategy] handles the creation of the [CacheEntry] and

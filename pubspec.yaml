@@ -1,5 +1,5 @@
 name: ecache
-version: 2.0.9
+version: 2.0.10
 description: >
   Provide a dart cache library usable on web, flutter and server side
 homepage: https://github.com/mikes222/ecache
@@ -12,12 +12,7 @@ dependencies:
 
 dev_dependencies:
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^6.0.0
+  lints: ^6.0.0
 
   # BSD-3
   test: ^1.26.3

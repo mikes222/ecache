@@ -1,3 +1,7 @@
+## 2.0.10
+
+* Implemented getOrProduceSync() for convenience
+
 ## 2.0.9
 
 * Dart-support

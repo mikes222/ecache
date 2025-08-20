@@ -5,6 +5,11 @@ import 'storage.dart';
 /// This is used for caches that can fetch or compute values asynchronously.
 typedef Produce<K, V> = Future<V> Function(K key);
 
+/// A function that produces a value for a given [key].
+///
+/// This is used for caches that can fetch or compute values.
+typedef ProduceSync<K, V> = V Function(K key);
+
 /// The interface for a cache that stores key-value pairs.
 ///
 /// Defines the core interface for a cache, providing methods for storing,
@@ -48,6 +53,8 @@ abstract class Cache<K, V> {
   /// Generates the value for the given [key] and stores it in the cache. If the produce method is
   /// already in progress, its completes is returned. If the cache is at capacity, an existing entry may be evicted.
   Future<V> produce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]);
+
+  V getOrProduceSync(K key, ProduceSync<K, V> produce);
 
   /// Associates the [key] with the given [element] in the cache.
   /// If the cache is at capacity, an existing entry may be evicted.
