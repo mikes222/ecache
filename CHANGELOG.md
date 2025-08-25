@@ -1,3 +1,8 @@
+## 2.0.11
+
+* Change type of cachEntry after successful async produce() call. This way get() will work after the entry has been produced.
+* Stripped down version of defaultCache (syncCache) with all async methods removed. This is a bit faster due to reduced code. 
+
 ## 2.0.10
 
 * Implemented getOrProduceSync() for convenience

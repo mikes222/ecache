@@ -118,6 +118,7 @@ void main() {
         return 50;
       });
     });
+    // value is already available, produce should not be called
     int a3 = await c.getOrProduce(4, (int key) {
       return Future.delayed(const Duration(seconds: 1), () {
         return 60;

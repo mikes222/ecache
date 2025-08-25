@@ -143,7 +143,7 @@ Do not use eviction callbacks and weak storage together — callbacks may not fi
 
 ### Asynchronous Value Production
 
-Use `getOrProduce` to fetch and cache data from a database or a network API.
+Use `getOrProduce` to fetch and cache data from a database or a network API while making sure that multiple calls will fetch the data only once and all calls receive the same instance of the produced data.
 
 ```dart
 import 'package:ecache/ecache.dart';

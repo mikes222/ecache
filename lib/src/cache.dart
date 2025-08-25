@@ -19,6 +19,11 @@ abstract class Cache<K, V> {
   Storage<K, V> get storage;
 
   /// Synchronously returns the element for the given [key], or `null` if the key is not found.
+  ///
+  /// This method delegates to the configured [strategy]. It cannot be used to
+  /// retrieve a [ProducerCacheEntry] because its value is a [Future]. As soon as a value is produced in
+  /// [getOrProduce] or [produce] method the cache entry will be changed so that this method works again. So expect an exception while the
+  /// entry is being produced.
   V? get(K key);
 
   /// Asynchronously returns the element for the given [key], or `null` if the key is not found.
