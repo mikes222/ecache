@@ -30,8 +30,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// If [onEvict] is set, it is called for each removed entry.
   void clear() {
     if (onEvict != null) {
-      for (var action in _internalMap.entries) {
-        if (action.value.value != null) onEvictInternal(action.key, action.value.value!);
+      for (var oldEntry in _internalMap.entries) {
+        onEvictInternal(oldEntry.key, oldEntry.value);
       }
     }
     _internalMap.clear();
@@ -40,8 +40,15 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// A helper method to invoke the [onEvict] callback.
   ///
   /// This method is used internally to call the [onEvict] callback when an entry is evicted from the cache.
-  void onEvictInternal(K key, V value) {
-    onEvict!(key, value);
+  void onEvictInternal(K key, CacheEntry<K, V> cacheEntry) {
+    if (onEvict == null) return;
+    if (cacheEntry.entry is ValueEntry) {
+      V value = cacheEntry.getValue();
+      onEvict!(key, value);
+      return;
+    } else {
+      (cacheEntry.entry as ProducerEntry<K, V>).abortProcess();
+    }
   }
 
   /// Retrieves a cache entry by its key.
@@ -56,8 +63,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// If an existing entry is replaced, [onEvict] is called if set.
   Storage set(K key, CacheEntry<K, V> value) {
     CacheEntry<K, V>? oldEntry = _internalMap[key];
-    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvictInternal(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
     }
     setInternal(key, value);
     return this;
@@ -74,8 +81,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// If [onEvict] is set, it is called for the removed entry.
   CacheEntry<K, V>? remove(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
-    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvictInternal(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
     }
     return oldEntry;
   }
@@ -85,8 +92,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   @override
   CacheEntry<K, V>? removeInternal(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
-    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvictInternal(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
     }
     return oldEntry;
   }
@@ -96,8 +103,8 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   @override
   CacheEntry<K, V>? onCapacity(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
-    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvictInternal(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
     }
     return oldEntry;
   }

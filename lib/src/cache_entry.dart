@@ -4,26 +4,52 @@ import 'package:ecache/src/cache.dart';
 
 /// Represents a basic entry in the cache, holding a value of type [V].
 class CacheEntry<K, V> {
-  final V? value;
+  Entry<K, V> entry;
 
-  const CacheEntry(this.value);
+  CacheEntry(this.entry);
+
+  V getValue() {
+    return (entry as ValueEntry<K, V>).value;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// A mixin for a [CacheEntry] that produces its value asynchronously.
-mixin ProducerCacheEntry<K, V> implements CacheEntry<K, V> {
+// Base class for the cache entries
+class Entry<K, V> {}
+
+//////////////////////////////////////////////////////////////////////////////
+
+/// Represents a cache entry holding a value of type [V].
+class ValueEntry<K, V> extends Entry<K, V> {
+  final V value;
+
+  ValueEntry(this.value);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+/// Represents a cache entry that is producing a value of type [V].
+class ProducerEntry<K, V> extends Entry<K, V> {
   /// The function that produces the value for this entry.
-  late final Produce<K, V> produce;
+  final Produce<K, V> produce;
 
   /// A [Completer] that completes with the value when it has been produced.
   final Completer<V> completer = Completer();
 
+  Future? future;
+
+  ProducerEntry(this.produce);
+
+  void abortProcess() {
+    future?.ignore();
+    completer.completeError(TimeoutException("Producer $produce aborted"));
+  }
+
   /// Starts the asynchronous production of the value.
   Future<void> start(K key, int timeoutMilliseconds) async {
     try {
-      Future future = produce(key);
-      future = future.timeout(Duration(milliseconds: timeoutMilliseconds));
+      future = produce(key).timeout(Duration(milliseconds: timeoutMilliseconds));
       V producerValue = await future;
       completer.complete(producerValue);
     } catch (error, stacktrace) {

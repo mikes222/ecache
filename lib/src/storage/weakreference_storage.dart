@@ -19,14 +19,28 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
 
   WeakReferenceStorage({this.onEvict});
 
+  /// A helper method to invoke the [onEvict] callback.
+  ///
+  /// This method is used internally to call the [onEvict] callback when an entry is evicted from the cache.
+  void onEvictInternal(K key, CacheEntry<K, V> cacheEntry) {
+    if (onEvict == null) return;
+    if (cacheEntry.entry is ValueEntry) {
+      V value = cacheEntry.getValue();
+      onEvict!(key, value);
+      return;
+    } else {
+      (cacheEntry.entry as ProducerEntry<K, V>).abortProcess();
+    }
+  }
+
   @override
   void clear() {
     if (onEvict != null) {
-      for (var element in _internalMap.entries) {
-        if (element.value.value != null) onEvict!(element.key, element.value.value!);
+      for (var oldEntry in _internalMap.entries) {
+        onEvictInternal(oldEntry.key, oldEntry.value);
       }
-      _weakMap.target?.entries.forEach((element) {
-        if (element.value.value != null) onEvict!(element.key, element.value.value!);
+      _weakMap.target?.entries.forEach((oldEntry) {
+        onEvictInternal(oldEntry.key, oldEntry.value);
       });
     }
     _internalMap.clear();
@@ -44,8 +58,8 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   @override
   Storage set(K key, CacheEntry<K, V> value) {
     CacheEntry<K, V>? oldEntry = _internalMap[key];
-    if (oldEntry != null && oldEntry.value != null && onEvict != null) {
-      onEvict!(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
     }
     _internalMap[key] = value;
     return this;
@@ -54,13 +68,13 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   @override
   CacheEntry<K, V>? remove(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
-    if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
       return oldEntry;
     }
     oldEntry = _weakMap.target?.remove(key);
-    if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
       return oldEntry;
     }
     return oldEntry;
@@ -69,13 +83,13 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   @override
   CacheEntry<K, V>? removeInternal(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
-    if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
       return oldEntry;
     }
     oldEntry = _weakMap.target?.remove(key);
-    if (oldEntry != null && oldEntry.value != null) {
-      if (onEvict != null) onEvict!(key, oldEntry.value!);
+    if (oldEntry != null) {
+      onEvictInternal(key, oldEntry);
       return oldEntry;
     }
     return oldEntry;
@@ -84,7 +98,7 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
   @override
   CacheEntry<K, V>? onCapacity(K key) {
     CacheEntry<K, V>? oldEntry = _internalMap.remove(key);
-    if (oldEntry != null && oldEntry.value != null) {
+    if (oldEntry != null) {
       if (_weakMap.target == null) _weakMap = WeakReference(<K, CacheEntry<K, V>>{});
       // it may be null again if we do not have enough memory, in this case, we do not save the old entry anymore.
       // from time to time even with an if in front of the next clause target may be null. So replaced the if with a question mark

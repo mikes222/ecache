@@ -31,11 +31,12 @@ class DefaultCache<K, V> extends Cache<K, V> {
 
   @override
   V? get(K key) {
-    CacheEntry<K, V>? entry = strategy.get(key);
-    if (entry is ProducerCacheEntry<K, V>) {
+    CacheEntry<K, V>? cacheEntry = strategy.get(key);
+    if (cacheEntry == null) return null;
+    if (cacheEntry.entry is ProducerEntry<K, V>) {
       throw Exception("Cannot get a value from a producer since the value is a future and the get() method is synchronously");
     }
-    return entry?.value;
+    return cacheEntry.getValue();
   }
 
   /// Asynchronously retrieves the value for the given [key].
@@ -44,31 +45,32 @@ class DefaultCache<K, V> extends Cache<K, V> {
   /// that will complete with the produced value.
   @override
   Future<V?> getAsync(K key) async {
-    CacheEntry<K, V>? entry = strategy.get(key);
-    if (entry is ProducerCacheEntry<K, V>) {
-      return entry.completer.future;
+    CacheEntry<K, V>? cacheEntry = strategy.get(key);
+    if (cacheEntry == null) return null;
+    if (cacheEntry.entry is ProducerEntry<K, V>) {
+      return (cacheEntry.entry as ProducerEntry<K, V>).completer.future;
     }
-    return entry?.value;
+    return cacheEntry.getValue();
   }
 
   @override
   Future<V> getOrProduce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]) async {
-    CacheEntry<K, V>? entry = storage.get(key);
-    if (entry != null) {
-      if (entry is ProducerCacheEntry<K, V>) {
-        return entry.completer.future;
+    CacheEntry<K, V>? cacheEntry = storage.get(key);
+    if (cacheEntry != null) {
+      if (cacheEntry.entry is ProducerEntry<K, V>) {
+        return (cacheEntry.entry as ProducerEntry<K, V>).completer.future;
       }
-      return entry.value!;
+      return cacheEntry.getValue();
     }
 
     strategy.onCapacity(key);
-    ProducerCacheEntry<K, V> producer = strategy.createProducerCacheEntry(key, produce);
+    CacheEntry<K, V> producer = strategy.createAndStartProducerEntry(key, produce, timeoutMilliseconds);
     storage.set(key, producer);
-    unawaited(producer.start(key, timeoutMilliseconds));
 
     try {
-      V value = await producer.completer.future;
-      storage.set(key, strategy.createCacheEntry(key, value));
+      V value = await (producer.entry as ProducerEntry).completer.future;
+      // replace this entry with a normal cacheEntry so that get() works
+      producer.entry = ValueEntry(value);
       return value;
     } catch (e) {
       storage.remove(key);
@@ -78,22 +80,21 @@ class DefaultCache<K, V> extends Cache<K, V> {
 
   @override
   Future<V> produce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]) async {
-    CacheEntry<K, V>? entry = storage.get(key);
-    if (entry != null) {
-      if (entry is ProducerCacheEntry<K, V>) {
-        return entry.completer.future;
+    CacheEntry<K, V>? cacheEntry = storage.get(key);
+    if (cacheEntry != null) {
+      if (cacheEntry.entry is ProducerEntry<K, V>) {
+        return (cacheEntry.entry as ProducerEntry<K, V>).completer.future;
       }
     }
 
     strategy.onCapacity(key);
-    ProducerCacheEntry<K, V> producer = strategy.createProducerCacheEntry(key, produce);
+    CacheEntry<K, V> producer = strategy.createAndStartProducerEntry(key, produce, timeoutMilliseconds);
     storage.set(key, producer);
-    unawaited(producer.start(key, timeoutMilliseconds));
 
     try {
-      V value = await producer.completer.future;
+      V value = await (producer.entry as ProducerEntry).completer.future;
       // replace this entry with a normal cacheEntry so that get() works
-      storage.set(key, strategy.createCacheEntry(key, value));
+      producer.entry = ValueEntry(value);
       return value;
     } catch (e) {
       storage.remove(key);
@@ -103,12 +104,12 @@ class DefaultCache<K, V> extends Cache<K, V> {
 
   @override
   V getOrProduceSync(K key, ProduceSync<K, V> produce) {
-    CacheEntry<K, V>? entry = storage.get(key);
-    if (entry != null) {
-      if (entry is ProducerCacheEntry<K, V>) {
+    CacheEntry<K, V>? cacheEntry = storage.get(key);
+    if (cacheEntry != null) {
+      if (cacheEntry.entry is ProducerEntry<K, V>) {
         throw Exception("Cannot get a value from a producer since the value is a future and the get() method is synchronously");
       }
-      return entry.value!;
+      return cacheEntry.getValue();
     }
 
     V value = produce(key);
@@ -123,8 +124,8 @@ class DefaultCache<K, V> extends Cache<K, V> {
   @override
   void set(K key, V element) {
     strategy.onCapacity(key);
-    CacheEntry<K, V>? entry = strategy.createCacheEntry(key, element);
-    storage.set(key, entry);
+    CacheEntry<K, V>? cacheEntry = strategy.createCacheEntry(key, element);
+    storage.set(key, cacheEntry);
   }
 
   @override
@@ -132,8 +133,8 @@ class DefaultCache<K, V> extends Cache<K, V> {
     assert(elements.isNotEmpty, "Cannot set an empty map");
     strategy.onCapacity(elements.keys.first);
     elements.forEach((key, value) {
-      CacheEntry<K, V>? entry = strategy.createCacheEntry(key, value);
-      storage.set(key, entry);
+      CacheEntry<K, V>? cacheEntry = strategy.createCacheEntry(key, value);
+      storage.set(key, cacheEntry);
     });
     strategy.onCapacity(elements.keys.last);
   }
@@ -153,6 +154,12 @@ class DefaultCache<K, V> extends Cache<K, V> {
   /// Removes the entry for the given [key] from the cache and returns its value.
   @override
   V? remove(K key) {
-    return storage.remove(key)?.value;
+    CacheEntry<K, V>? cacheEntry = storage.remove(key);
+    if (cacheEntry == null) return null;
+    if (cacheEntry.entry is ProducerEntry<K, V>) {
+      (cacheEntry.entry as ProducerEntry<K, V>).abortProcess();
+      return null;
+    }
+    return cacheEntry.getValue();
   }
 }

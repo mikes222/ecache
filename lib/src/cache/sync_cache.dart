@@ -32,8 +32,9 @@ class SyncCache<K, V> extends Cache<K, V> {
   /// Synchronously returns the element for the given [key], or `null` if the key is not found.
   @override
   V? get(K key) {
-    CacheEntry<K, V>? entry = strategy.get(key);
-    return entry?.value;
+    CacheEntry<K, V>? cacheEntry = strategy.get(key);
+    if (cacheEntry == null) return null;
+    return cacheEntry.getValue();
   }
 
   /// Asynchronously retrieves the value for the given [key].
@@ -57,9 +58,9 @@ class SyncCache<K, V> extends Cache<K, V> {
 
   @override
   V getOrProduceSync(K key, ProduceSync<K, V> produce) {
-    CacheEntry<K, V>? entry = storage.get(key);
-    if (entry != null) {
-      return entry.value!;
+    CacheEntry<K, V>? cacheEntry = storage.get(key);
+    if (cacheEntry != null) {
+      return cacheEntry.getValue();
     }
 
     V value = produce(key);
@@ -74,8 +75,8 @@ class SyncCache<K, V> extends Cache<K, V> {
   @override
   void set(K key, V element) {
     strategy.onCapacity(key);
-    CacheEntry<K, V>? entry = strategy.createCacheEntry(key, element);
-    storage.set(key, entry);
+    CacheEntry<K, V>? cacheEntry = strategy.createCacheEntry(key, element);
+    storage.set(key, cacheEntry);
   }
 
   @override
@@ -83,8 +84,8 @@ class SyncCache<K, V> extends Cache<K, V> {
     assert(elements.isNotEmpty, "Cannot set an empty map");
     strategy.onCapacity(elements.keys.first);
     elements.forEach((key, value) {
-      CacheEntry<K, V>? entry = strategy.createCacheEntry(key, value);
-      storage.set(key, entry);
+      CacheEntry<K, V>? cacheEntry = strategy.createCacheEntry(key, value);
+      storage.set(key, cacheEntry);
     });
     strategy.onCapacity(elements.keys.last);
   }
@@ -104,6 +105,8 @@ class SyncCache<K, V> extends Cache<K, V> {
   /// Removes the entry for the given [key] from the cache and returns its value.
   @override
   V? remove(K key) {
-    return storage.remove(key)?.value;
+    CacheEntry<K, V>? cacheEntry = storage.remove(key);
+    if (cacheEntry == null) return null;
+    return cacheEntry.getValue();
   }
 }

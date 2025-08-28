@@ -128,5 +128,23 @@ void main() {
       // Ensure the key is not cached after a timeout
       expect(cache.containsKey('a'), isFalse);
     });
+
+    test('getOrProduce() handles null returnvalues', () async {
+      final cache = SimpleCache<String, int?>(capacity: 1);
+      final value = await cache.getOrProduce('a', (key) async {
+        await Future.delayed(const Duration(milliseconds: 50));
+        return null;
+      }, 100);
+
+      expect(value, null);
+      expect(await cache.getAsync('a'), null);
+
+      final value2 = await cache.getOrProduce('a', (key) async {
+        await Future.delayed(const Duration(milliseconds: 50));
+        return 1;
+      }, 100);
+      expect(value2, null);
+      expect(await cache.getAsync('a'), null);
+    });
   });
 }

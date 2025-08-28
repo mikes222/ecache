@@ -14,12 +14,12 @@ class LfuStrategy<K, V> extends AbstractStrategy<K, V> {
 
   @override
   CacheEntry<K, V> createCacheEntry(K key, V value) {
-    return LfuCacheEntry(key, value);
+    return LfuCacheEntry(ValueEntry(value));
   }
 
   @override
-  ProducerCacheEntry<K, V> createProducerCacheEntry(K key, Produce<K, V> produce) {
-    return LfuProducerCacheEntry(key, produce);
+  CacheEntry<K, V> createAndStartProducerEntry(K key, Produce<K, V> produce, int timeout) {
+    return LfuCacheEntry(ProducerEntry(produce)..start(key, timeout));
   }
 
   @override
@@ -36,13 +36,5 @@ class LfuStrategy<K, V> extends AbstractStrategy<K, V> {
 class LfuCacheEntry<K, V> extends CacheEntry<K, V> {
   int use = 0;
 
-  LfuCacheEntry(K key, super.value);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class LfuProducerCacheEntry<K, V> extends LfuCacheEntry<K, V> with ProducerCacheEntry<K, V> {
-  LfuProducerCacheEntry(K key, Produce<K, V> produce) : super(key, null) {
-    this.produce = produce;
-  }
+  LfuCacheEntry(super.entry);
 }

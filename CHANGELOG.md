@@ -1,3 +1,7 @@
+## 2.0.12
+
+* Refactored cacheEntry to support nullable values
+
 ## 2.0.11
 
 * Change type of cachEntry after successful async produce() call. This way get() will work after the entry has been produced.

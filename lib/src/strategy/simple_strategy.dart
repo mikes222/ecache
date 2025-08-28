@@ -16,13 +16,13 @@ class SimpleStrategy<K, V> extends AbstractStrategy<K, V> {
   /// Creates a standard [CacheEntry] with the given value.
   @override
   CacheEntry<K, V> createCacheEntry(K key, V value) {
-    return CacheEntry(value);
+    return CacheEntry(ValueEntry(value));
   }
 
   /// Creates a [SimpleProducerCacheEntry] for asynchronous value production.
   @override
-  ProducerCacheEntry<K, V> createProducerCacheEntry(K key, Produce<K, V> produce) {
-    return SimpleProducerCacheEntry(produce);
+  CacheEntry<K, V> createAndStartProducerEntry(K key, Produce<K, V> produce, int timeout) {
+    return CacheEntry(ProducerEntry(produce)..start(key, timeout));
   }
 
   /// Retrieves an entry from storage without any additional processing.
@@ -30,15 +30,5 @@ class SimpleStrategy<K, V> extends AbstractStrategy<K, V> {
   CacheEntry<K, V>? get(K key) {
     CacheEntry<K, V>? entry = storage.get(key);
     return entry;
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-/// A concrete implementation of a [ProducerCacheEntry] for the [SimpleStrategy].
-class SimpleProducerCacheEntry<K, V> extends CacheEntry<K, V> with ProducerCacheEntry<K, V> {
-  /// Creates a new [SimpleProducerCacheEntry] with the given [produce] function.
-  SimpleProducerCacheEntry(Produce<K, V> produce) : super(null) {
-    this.produce = produce;
   }
 }

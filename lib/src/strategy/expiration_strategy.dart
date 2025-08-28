@@ -28,12 +28,12 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
 
   @override
   CacheEntry<K, V> createCacheEntry(K key, V element) {
-    return ExpirationCacheEntry(key, element);
+    return ExpirationCacheEntry(ValueEntry(element));
   }
 
   @override
-  ProducerCacheEntry<K, V> createProducerCacheEntry(K key, Produce<K, V> produce) {
-    return ExpirationProducerCacheEntry(key, produce);
+  CacheEntry<K, V> createAndStartProducerEntry(K key, Produce<K, V> produce, int timeout) {
+    return ExpirationCacheEntry(ProducerEntry(produce)..start(key, timeout));
   }
 
   @override
@@ -54,13 +54,5 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
 class ExpirationCacheEntry<K, V> extends CacheEntry<K, V> {
   final int insertTime;
 
-  ExpirationCacheEntry(K key, super.value) : insertTime = DateTime.now().millisecondsSinceEpoch;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class ExpirationProducerCacheEntry<K, V> extends ExpirationCacheEntry<K, V> with ProducerCacheEntry<K, V> {
-  ExpirationProducerCacheEntry(K key, Produce<K, V> produce) : super(key, null) {
-    this.produce = produce;
-  }
+  ExpirationCacheEntry(super.entry) : insertTime = DateTime.now().millisecondsSinceEpoch;
 }

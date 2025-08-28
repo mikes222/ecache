@@ -15,13 +15,13 @@ class LruStrategy<K, V> extends AbstractStrategy<K, V> {
   }
 
   @override
-  CacheEntry<K, V> createCacheEntry(K key, V element) {
-    return LruCacheEntry(key, element, ++lastUse);
+  CacheEntry<K, V> createCacheEntry(K key, V value) {
+    return LruCacheEntry(ValueEntry(value), ++lastUse);
   }
 
   @override
-  ProducerCacheEntry<K, V> createProducerCacheEntry(K key, Produce<K, V> produce) {
-    return LruProducerCacheEntry(key, produce, ++lastUse);
+  CacheEntry<K, V> createAndStartProducerEntry(K key, Produce<K, V> produce, int timeout) {
+    return LruCacheEntry(ProducerEntry(produce)..start(key, timeout), ++lastUse);
   }
 
   @override
@@ -38,17 +38,9 @@ class LruStrategy<K, V> extends AbstractStrategy<K, V> {
 class LruCacheEntry<K, V> extends CacheEntry<K, V> {
   int lastUse;
 
-  LruCacheEntry(K key, super.value, this.lastUse);
+  LruCacheEntry(super.entry, this.lastUse);
 
   void updateLastUse(int lastUse) {
     this.lastUse = lastUse;
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-class LruProducerCacheEntry<K, V> extends LruCacheEntry<K, V> with ProducerCacheEntry<K, V> {
-  LruProducerCacheEntry(K key, Produce<K, V> produce, int lastUse) : super(key, null, lastUse) {
-    this.produce = produce;
   }
 }
