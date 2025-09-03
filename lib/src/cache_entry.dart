@@ -42,8 +42,7 @@ class ProducerEntry<K, V> extends Entry<K, V> {
   ProducerEntry(this.produce);
 
   void abortProcess() {
-    future?.ignore();
-    completer.completeError(TimeoutException("Producer $produce aborted"));
+    if (!completer.isCompleted) completer.completeError(TimeoutException("Producer $produce aborted"));
   }
 
   /// Starts the asynchronous production of the value.

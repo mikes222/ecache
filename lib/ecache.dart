@@ -15,6 +15,7 @@ export 'src/cache_entry.dart';
 export 'src/storage.dart';
 export 'src/storage/simple_storage.dart';
 export 'src/storage/statistics_storage.dart';
+export 'src/storage/storage_mgr.dart';
 export 'src/storage/weakreference_storage.dart';
 export 'src/strategy/abstract_strategy.dart';
 export 'src/strategy/expiration_strategy.dart';

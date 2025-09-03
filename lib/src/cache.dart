@@ -92,4 +92,6 @@ abstract class Cache<K, V> {
   /// Removes the entry for the given [key] and returns its value.
   /// Returns `null` if the key was not found.
   V? remove(K key);
+
+  void dispose();
 }

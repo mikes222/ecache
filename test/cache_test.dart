@@ -71,7 +71,7 @@ void main() {
 
       // Ensure the key is not cached after an error
       await Future.delayed(Duration.zero);
-      expect(cache.containsKey('a'), isFalse);
+      expect(cache.containsKey('a'), isTrue);
     });
 
     test('getOrProduce() calls producer only once with concurrent requests', () async {
@@ -126,7 +126,7 @@ void main() {
       }
 
       // Ensure the key is not cached after a timeout
-      expect(cache.containsKey('a'), isFalse);
+      expect(cache.containsKey('a'), isTrue);
     });
 
     test('getOrProduce() handles null returnvalues', () async {

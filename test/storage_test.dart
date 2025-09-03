@@ -11,13 +11,13 @@ void main() {
       );
 
       // Initial state
-      expect(statisticsStorage.hitCount, 0);
-      expect(statisticsStorage.missCount, 0);
-      expect(statisticsStorage.evictionCount, 0);
+      expect(statisticsStorage.storageMetric.hitCount, 0);
+      expect(statisticsStorage.storageMetric.missCount, 0);
+      expect(statisticsStorage.storageMetric.evictionCount, 0);
 
       // Miss
       cache.get('a');
-      expect(statisticsStorage.missCount, 1);
+      expect(statisticsStorage.storageMetric.missCount, 1);
 
       // Set
       cache.set('a', 1);
@@ -25,16 +25,16 @@ void main() {
 
       // Hit
       cache.get('a');
-      expect(statisticsStorage.hitCount, 1);
+      expect(statisticsStorage.storageMetric.hitCount, 1);
 
       // Eviction
       cache.set('c', 3);
-      expect(statisticsStorage.evictionCount, 1);
+      expect(statisticsStorage.storageMetric.evictionCount, 1);
 
       // Final state
-      expect(statisticsStorage.hitCount, 1);
-      expect(statisticsStorage.missCount, 1);
-      expect(statisticsStorage.evictionCount, 1);
+      expect(statisticsStorage.storageMetric.hitCount, 1);
+      expect(statisticsStorage.storageMetric.missCount, 1);
+      expect(statisticsStorage.storageMetric.evictionCount, 1);
     });
 
     test('toString() reports correct statistics', () {
@@ -50,9 +50,9 @@ void main() {
       cache.set('c', 2); // Eviction
 
       final statsString = statisticsStorage.toString();
-      expect(statsString, contains('hits: 1'));
-      expect(statsString, contains('misses: 1'));
-      expect(statsString, contains('evictions: 1'));
+      expect(statsString, contains('_hitCount: 1'));
+      expect(statsString, contains('_missCount: 1'));
+      expect(statsString, contains('_evictionCount: 1'));
     });
   });
 }

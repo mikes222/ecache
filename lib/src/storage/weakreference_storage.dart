@@ -19,6 +19,11 @@ class WeakReferenceStorage<K, V> implements Storage<K, V> {
 
   WeakReferenceStorage({this.onEvict});
 
+  @override
+  void dispose() {
+    clear();
+  }
+
   /// A helper method to invoke the [onEvict] callback.
   ///
   /// This method is used internally to call the [onEvict] callback when an entry is evicted from the cache.

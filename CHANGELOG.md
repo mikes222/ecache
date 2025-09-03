@@ -1,3 +1,11 @@
+## 2.1.0
+
+* Introducing StorageMgr to easily collect statistics
+
+## 2.0.13
+
+* Bugfix when producer throws an exception
+
 ## 2.0.12
 
 * Refactored cacheEntry to support nullable values

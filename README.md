@@ -116,14 +116,15 @@ void main() {
 import 'package:ecache/ecache.dart';
 
 void main() {
-  final storage = StatisticsStorage();
-  final cache = SimpleCache(storage: storage, capacity: 20);
+  StorageMgr().setEnable(true);
+  final cache = SimpleCache(capacity: 20);
 
   cache.set('key', 42);
   cache.get('key');
   cache.get('unknown_key');
-
-  print(storage); // View hit/miss stats
+  print(cache.storage); // View hit/miss stats
+  
+  print(StorageMgr().createReport()); // View all stats
 }
 ```
 

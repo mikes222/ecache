@@ -24,10 +24,14 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   SimpleStorage({this.onEvict});
 
   @override
+  void dispose() {
+    clear();
+  }
 
   /// Clears the cache, removing all entries.
   ///
   /// If [onEvict] is set, it is called for each removed entry.
+  @override
   void clear() {
     if (onEvict != null) {
       for (var oldEntry in _internalMap.entries) {

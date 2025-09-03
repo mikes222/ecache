@@ -8,6 +8,8 @@ typedef OnEvict<K, V> = void Function(K k, V v);
 /// A storage mechanism is responsible for storing and retrieving cache entries.
 /// It provides methods for adding, removing, and checking the existence of entries.
 abstract class Storage<K, V> {
+  void dispose();
+
   // returns the value denoted by [key] or null
   CacheEntry<K, V>? get(K key);
 
