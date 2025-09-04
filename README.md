@@ -7,7 +7,7 @@ A simple, flexible, and powerful caching library for Dart and Flutter, designed 
 - **Multiple Caching Strategies**: Choose from several built-in eviction policies:
   - **LRU (Least Recently Used)**: Evicts the least recently accessed items first.
   - **LFU (Least Frequently Used)**: Evicts the least frequently accessed items first.
-  - **FIFO (First-In, First-Out)**: A simple strategy provided by `SimpleCache` that evicts the oldest items first.
+  - **FIFO (First-In, First-Out)**: A simple strategy that evicts the oldest items first.
   - **Expiration-based**: Evicts items that have passed their expiration time.
 - **Pluggable Architecture**: The library is designed with a decoupled architecture, allowing you to mix and match components or create your own.
 - **Asynchronous Value Production**: Automatically fetch and cache values that are expensive to compute or retrieve, ensuring the production logic runs only once for a given key.
@@ -100,9 +100,9 @@ import 'package:ecache/ecache.dart';
 void main() {
   final cache = SimpleCache(
     capacity: 20,
-    storage: SimpleStorage(onEvict: (key, value) {
+    onEvict: (key, value) {
       value.dispose(); // Clean up evicted items
-    }),
+    },
   );
 
   cache['key'] = 42;
@@ -128,6 +128,8 @@ void main() {
 }
 ```
 
+The cache can be given an optional name to make the report more readable.
+
 ### Weak References
 
 ```dart
@@ -140,7 +142,9 @@ void main() {
 ```
 
 ⚠️ Weak references allow garbage collection of older items beyond the guaranteed capacity.
-Do not use eviction callbacks and weak storage together — callbacks may not fire when GC clears items.
+
+ - Do not use eviction callbacks and weak storage together — callbacks may not fire when GC clears items.
+ - WeakReferenceStorage are not able to produce statistics
 
 ### Asynchronous Value Production
 

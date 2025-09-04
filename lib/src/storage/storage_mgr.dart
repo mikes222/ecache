@@ -7,7 +7,11 @@ class StorageMgr {
 
   final Set<StatisticsStorage> _storages = {};
 
-  bool _enable = false;
+  bool _enabled = false;
+
+  int _registered = 0;
+
+  int _unregisterd = 0;
 
   StorageMgr._();
 
@@ -17,24 +21,39 @@ class StorageMgr {
     return _instance!;
   }
 
-  void setEnable(bool enable) {
-    _enable = enable;
+  void setEnabled(bool enabled) {
+    // assertions are not included in production code so it is impossible to enable profiling in release mode
+    assert(() {
+      _enabled = enabled;
+      return true;
+    }());
   }
 
-  bool isEnabled() => _enable;
+  bool isEnabled() => _enabled;
 
   void register(StatisticsStorage storage) {
+    if (!_enabled) return;
     _storages.add(storage);
+    ++_registered;
   }
 
   void unregister(StatisticsStorage storage) {
     _storages.remove(storage);
+    ++_unregisterd;
+  }
+
+  void clear() {
+    for (var storage in _storages) {
+      storage.storageMetric.clear();
+    }
+    _registered = 0;
+    _unregisterd = 0;
   }
 
   StorageReport createReport() {
     final report = StorageReport();
     for (var storage in _storages) {
-      report._storageMetrics[storage.runtimeType.toString()] = storage.storageMetric;
+      report._storageMetrics.add(storage.storageMetric.._currentLength = storage.length);
     }
     return report;
   }
@@ -49,6 +68,14 @@ class StorageMgr {
 //////////////////////////////////////////////////////////////////////////////
 
 class StorageMetric {
+  static int _nextId = 0;
+
+  final int id;
+
+  final String name;
+
+  final int capacity;
+
   /// Maximum length of the cache
   int _maxLength = 0;
 
@@ -63,6 +90,11 @@ class StorageMetric {
 
   /// number of times an entry has been stored to the cache
   int _setCount = 0;
+
+  /// The current length of the cache.
+  int _currentLength = 0;
+
+  StorageMetric({required this.name, this.capacity = 0}) : id = _nextId++;
 
   /// The number of times a requested item was found in the cache.
   int get hitCount => _hitCount;
@@ -91,23 +123,49 @@ class StorageMetric {
 
   @override
   String toString() {
-    return 'StorageMetric{_maxLength: $_maxLength, _hitCount: $_hitCount, _missCount: $_missCount, _evictionCount: $_evictionCount, _setCount: $_setCount}';
+    return '$id, $name: capacity: $capacity, maxEntries: $_maxLength, currentEntries: $_currentLength, hits: $_hitCount, misses: $_missCount, evictions: $_evictionCount, sets: $_setCount}';
+  }
+
+  void clear() {
+    _maxLength = 0;
+    _hitCount = 0;
+    _missCount = 0;
+    _evictionCount = 0;
+    _setCount = 0;
+    _currentLength = 0;
   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 class StorageReport {
-  final Map<String, StorageMetric> _storageMetrics = {};
+  final DateTime timestamp;
+
+  final int registered;
+
+  final int unregistered;
+
+  final bool enabled;
+
+  final List<StorageMetric> _storageMetrics = [];
+
+  StorageReport()
+      : registered = StorageMgr()._registered,
+        unregistered = StorageMgr()._unregisterd,
+        enabled = StorageMgr().isEnabled(),
+        timestamp = DateTime.now();
 
   /// Returns the storage metrics map
-  Map<String, StorageMetric> get storageMetrics => _storageMetrics;
+  List<StorageMetric> get storageMetrics => _storageMetrics;
 
   @override
   String toString() {
     final buffer = StringBuffer();
-    for (final entry in storageMetrics.entries) {
-      buffer.writeln('  ${entry.key}: ${entry.value}');
+    buffer.writeln('Storage Report (${timestamp.toIso8601String()})');
+    buffer.writeln('Storages registered: $registered, unregistered: $unregistered');
+    if (!enabled) buffer.writeln('Storage reports are disabled');
+    for (final entry in storageMetrics) {
+      buffer.writeln('  $entry');
     }
 
     return buffer.toString();

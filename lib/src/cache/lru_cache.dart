@@ -1,5 +1,4 @@
-import '../strategy/lru_strategy.dart';
-import 'default_cache.dart';
+import 'package:ecache/ecache.dart';
 
 /// A [Cache] that evicts the least recently used items first.
 ///
@@ -13,5 +12,5 @@ class LruCache<K, V> extends DefaultCache<K, V> {
   ///
   /// An optional [storage] mechanism can be provided. If not, a [SimpleStorage]
   /// instance is used.
-  LruCache({super.storage, required super.capacity}) : super(strategy: LruStrategy<K, V>());
+  LruCache({super.storage, required super.capacity, super.onEvict, super.name}) : super(strategy: LruStrategy<K, V>());
 }

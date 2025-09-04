@@ -50,9 +50,9 @@ void main() {
       cache.set('c', 2); // Eviction
 
       final statsString = statisticsStorage.toString();
-      expect(statsString, contains('_hitCount: 1'));
-      expect(statsString, contains('_missCount: 1'));
-      expect(statsString, contains('_evictionCount: 1'));
+      expect(statsString, contains('hits: 1'));
+      expect(statsString, contains('misses: 1'));
+      expect(statsString, contains('evictions: 1'));
     });
   });
 }

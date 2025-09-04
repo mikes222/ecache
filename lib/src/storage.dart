@@ -21,6 +21,7 @@ abstract class Storage<K, V> {
   CacheEntry<K, V>? remove(K key);
 
   /// An internal method for removing an entry, which may be used by cache strategies.
+  /// Used by ExpirationStrategy if an entry expires
   CacheEntry<K, V>? removeInternal(K key);
 
   /// Returns the [CacheEntry] for the given [key], or `null` if the key is not found.

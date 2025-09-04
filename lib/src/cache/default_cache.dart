@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:ecache/src/storage/storage_mgr.dart';
-
 import '../../ecache.dart';
 
 /// A generic class for [Cache] implementations.
@@ -25,8 +23,9 @@ class DefaultCache<K, V> extends Cache<K, V> {
   ///
   /// An optional [strategy] can be provided. If not, a [SimpleStrategy]
   /// instance is used.
-  DefaultCache({Storage<K, V>? storage, required int capacity, AbstractStrategy<K, V>? strategy})
-      : storage = storage ?? (StorageMgr().isEnabled() ? StatisticsStorage<K, V>() : SimpleStorage<K, V>()),
+  DefaultCache({Storage<K, V>? storage, required int capacity, AbstractStrategy<K, V>? strategy, OnEvict<K, V>? onEvict, String? name})
+      : storage = storage ??
+            (StorageMgr().isEnabled() ? StatisticsStorage<K, V>(capacity: capacity, onEvict: onEvict, name: name) : SimpleStorage<K, V>(onEvict: onEvict)),
         strategy = strategy ?? SimpleStrategy<K, V>() {
     this.strategy.init(this.storage, capacity);
   }

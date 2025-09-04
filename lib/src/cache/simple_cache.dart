@@ -1,5 +1,4 @@
-import '../strategy/simple_strategy.dart';
-import 'default_cache.dart';
+import 'package:ecache/ecache.dart';
 
 /// A basic cache that uses a [SimpleStrategy] for entry management.
 ///
@@ -11,8 +10,5 @@ class SimpleCache<K, V> extends DefaultCache<K, V> {
   ///
   /// An optional [storage] mechanism can be provided. If none is supplied,
   /// a default [SimpleStorage] will be used.
-  SimpleCache({super.storage, required super.capacity})
-      : super(
-          strategy: SimpleStrategy<K, V>(),
-        );
+  SimpleCache({super.storage, required super.capacity, super.onEvict, super.name}) : super(strategy: SimpleStrategy<K, V>());
 }

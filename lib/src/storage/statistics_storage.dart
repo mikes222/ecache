@@ -1,12 +1,11 @@
-import 'package:ecache/src/storage/storage_mgr.dart';
-
 import '../../ecache.dart';
 
 /// Same as [SimpleStorage] but collects a few statistical data.
 class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
-  final StorageMetric storageMetric = StorageMetric();
+  late final StorageMetric storageMetric;
 
-  StatisticsStorage({super.onEvict}) {
+  StatisticsStorage({super.onEvict, int capacity = 0, String? name}) {
+    storageMetric = StorageMetric(name: name ?? runtimeType.toString(), capacity: capacity);
     StorageMgr().register(this);
   }
 
@@ -35,13 +34,18 @@ class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
   }
 
   @override
-  CacheEntry<K, V>? onCapacity(K key) {
-    final entry = super.onCapacity(key);
-    if (entry != null) {
-      storageMetric.incEvictionCount();
-    }
-    return entry;
+  void onEvictInternal(K key, CacheEntry<K, V> cacheEntry) {
+    storageMetric.incEvictionCount();
+    super.onEvictInternal(key, cacheEntry);
   }
+
+  // @override
+  // CacheEntry<K, V>? onCapacity(K key) {
+  //   final entry = super.onCapacity(key);
+  //   if (entry != null) {
+  //   }
+  //   return entry;
+  // }
 
   @override
   String toString() {
