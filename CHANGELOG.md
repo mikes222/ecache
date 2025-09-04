@@ -1,3 +1,7 @@
+## 2.1.1
+
+* Enhancing StorageMgr to improve usefullness of statistics
+
 ## 2.1.0
 
 * Introducing StorageMgr to easily collect statistics

@@ -112,23 +112,57 @@ void main() {
 
 ### Get Statistics
 
+Enable statistics collection to monitor cache performance, detect memory leaks, and optimize cache configurations:
+
 ```dart
 import 'package:ecache/ecache.dart';
 
 void main() {
-  StorageMgr().setEnable(true);
-  final cache = SimpleCache(capacity: 20);
-
-  cache.set('key', 42);
-  cache.get('key');
-  cache.get('unknown_key');
-  print(cache.storage); // View hit/miss stats
+  // Enable statistics collection (only works in debug mode)
+  StorageMgr().setEnabled(true);
   
-  print(StorageMgr().createReport()); // View all stats
+  final userCache = SimpleCache<String, User>(capacity: 100);
+  final sessionCache = SimpleCache<String, Session>(capacity: 50);
+
+  // Perform some cache operations
+  userCache.set('user1', User('Alice'));
+  userCache.get('user1');     // hit
+  userCache.get('user999');   // miss
+  
+  sessionCache.set('session1', Session('abc123'));
+  
+  // View individual cache statistics
+  print(userCache.storage); // Shows hits, misses, evictions for this cache
+  
+  // View comprehensive report for all caches
+  print(StorageMgr().createReport());
 }
 ```
 
-The cache can be given an optional name to make the report more readable.
+**What you can accomplish with statistics:**
+
+- **Find Memory Leaks**: Detect undisposed caches that continue to consume memory
+- **Optimize Capacity**: Analyze hit/miss ratios to determine if cache sizes are appropriate
+- **Monitor Performance**: Track cache effectiveness across your application
+- **Debug Issues**: Identify caches with unexpected eviction patterns
+- **Resource Planning**: Understand memory usage patterns for different cache types
+
+**Key Metrics Available:**
+- `hits/misses`: Cache effectiveness ratio
+- `currentEntries/maxEntries`: Current vs peak memory usage  
+- `capacity`: Configured maximum entries
+- `evictions`: How often items are removed due to capacity limits
+- `sets`: Total number of items stored
+
+**Example Report Output:**
+```
+Storage Report (2024-01-15T10:30:45.123Z)
+Storages registered: 2, unregistered: 0
+  1, StatisticsStorage<String, User>: capacity: 100, maxEntries: 45, currentEntries: 42, hits: 156, misses: 23, evictions: 3, sets: 48
+  2, StatisticsStorage<String, Session>: capacity: 50, maxEntries: 12, currentEntries: 12, hits: 89, misses: 5, evictions: 0, sets: 12
+```
+
+⚠️ Statistics collection only works in debug mode and has minimal performance impact.
 
 ### Weak References
 
