@@ -146,5 +146,41 @@ void main() {
       expect(value2, null);
       expect(await cache.getAsync('a'), null);
     });
+
+    test('dispose() aborts a long-running getOrProduce()', () async {
+      final cache = SimpleCache<String, int>(capacity: 5, onEvict: (key, value) {});
+
+      // Start the long-running producer
+      final future = cache.getOrProduce('a', (key) async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        return 42;
+      });
+
+      // Immediately dispose of the cache
+      cache.dispose();
+
+      //int value = await future;
+      // Expect the future to throw a TimeoutException because dispose() aborts it
+      expect(future, throwsA(isA<TimeoutException>()));
+      //expect(value, 42);
+    });
+
+    test('dispose() aborts a long-running getOrProduce() with exception', () async {
+      final cache = SimpleCache<String, int>(capacity: 5, onEvict: (key, value) {});
+
+      // Start the long-running producer
+      final future = cache.getOrProduce('a', (key) async {
+        await Future.delayed(const Duration(milliseconds: 100));
+        throw Exception("Exception in Producer");
+      });
+
+      // Immediately dispose of the cache
+      cache.dispose();
+
+      //int value = await future;
+      // Expect the future to throw a TimeoutException because dispose() aborts it
+      expect(future, throwsA(isA<TimeoutException>()));
+      //expect(value, 42);
+    });
   });
 }

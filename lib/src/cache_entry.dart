@@ -52,7 +52,7 @@ class ProducerEntry<K, V> extends Entry<K, V> {
       V producerValue = await future;
       completer.complete(producerValue);
     } catch (error, stacktrace) {
-      completer.completeError(error, stacktrace);
+      if (!completer.isCompleted) completer.completeError(error, stacktrace);
     }
   }
 }
