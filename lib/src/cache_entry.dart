@@ -50,7 +50,8 @@ class ProducerEntry<K, V> extends Entry<K, V> {
     try {
       future = produce(key).timeout(Duration(milliseconds: timeoutMilliseconds));
       V producerValue = await future;
-      completer.complete(producerValue);
+      // if the cache is disposed the future may already completed
+      if (!completer.isCompleted) completer.complete(producerValue);
     } catch (error, stacktrace) {
       if (!completer.isCompleted) completer.completeError(error, stacktrace);
     }

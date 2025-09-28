@@ -10,7 +10,7 @@ A simple, flexible, and powerful caching library for Dart and Flutter, designed 
   - **FIFO (First-In, First-Out)**: A simple strategy that evicts the oldest items first.
   - **Expiration-based**: Evicts items that have passed their expiration time.
 - **Pluggable Architecture**: The library is designed with a decoupled architecture, allowing you to mix and match components or create your own.
-- **Asynchronous Value Production**: Automatically fetch and cache values that are expensive to compute or retrieve, ensuring the production logic runs only once for a given key.
+- **Asynchronous Value Production (Write-through cache)**: Automatically fetch and cache values that are expensive to compute or retrieve, ensuring the production logic runs only once for a given key.
 - **Detailed Statistics**: Monitor cache performance with built-in statistics tracking for hits, misses, and evictions.
 - **Extensible Storage**: While a simple `Map`-based storage is provided, you can create your own storage solutions (e.g., for disk-based or database-backed caching).
 - **Null-Safe and Well-Documented**: The entire API is null-safe and comes with comprehensive documentation.
@@ -180,7 +180,7 @@ void main() {
  - Do not use eviction callbacks and weak storage together — callbacks may not fire when GC clears items.
  - WeakReferenceStorage are not able to produce statistics
 
-### Asynchronous Value Production
+### Asynchronous Value Production (Write-through cache)
 
 Use `getOrProduce` to fetch and cache data from a database or a network API while making sure that multiple calls will fetch the data only once and all calls receive the same instance of the produced data.
 
