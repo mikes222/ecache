@@ -1,3 +1,7 @@
+## 2.1.2
+
+* Fix: prevent exception if cache is disposed() and async entry finishes afterwards
+
 ## 2.1.1
 
 * Enhancing StorageMgr to improve usefullness of statistics
