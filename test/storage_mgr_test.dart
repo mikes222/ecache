@@ -42,7 +42,9 @@ void main() {
       expect(cache.storage, isA<StatisticsStorage<String, int>>());
     });
 
-    test('createReport() should return report with valid properties when enabled', () {
+    test(
+        'createReport() should return report with valid properties when enabled',
+        () {
       // Arrange
       storageMgr.setEnabled(true);
       final cache = DefaultCache<String, int>(capacity: 10);
@@ -121,8 +123,10 @@ void main() {
       final stringStorage = StatisticsStorage<int, String>();
 
       // Perform operations on both storages
-      final intCache = SimpleCache<String, int>(capacity: 5, storage: intStorage);
-      final stringCache = SimpleCache<int, String>(capacity: 5, storage: stringStorage);
+      final intCache =
+          SimpleCache<String, int>(capacity: 5, storage: intStorage);
+      final stringCache =
+          SimpleCache<int, String>(capacity: 5, storage: stringStorage);
 
       intCache.set('test', 42);
       stringCache.set(1, 'hello');
@@ -133,8 +137,10 @@ void main() {
       // Assert
       expect(report.storageMetrics.length, 2);
 
-      final intMetric = report.storageMetrics.firstWhere((test) => test.name == 'StatisticsStorage<String, int>');
-      final stringMetric = report.storageMetrics.firstWhere((test) => test.name == 'StatisticsStorage<int, String>');
+      final intMetric = report.storageMetrics
+          .firstWhere((test) => test.name == 'StatisticsStorage<String, int>');
+      final stringMetric = report.storageMetrics
+          .firstWhere((test) => test.name == 'StatisticsStorage<int, String>');
 
       expect(intMetric.setCount, 1);
       expect(stringMetric.setCount, 1);

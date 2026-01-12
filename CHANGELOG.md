@@ -1,3 +1,7 @@
+## 2.2.0
+
+* Perf: Enhance performance when cache reaches capacity
+
 ## 2.1.2
 
 * Fix: prevent exception if cache is disposed() and async entry finishes afterwards

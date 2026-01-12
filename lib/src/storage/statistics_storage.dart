@@ -5,7 +5,8 @@ class StatisticsStorage<K, V> extends SimpleStorage<K, V> {
   late final StorageMetric storageMetric;
 
   StatisticsStorage({super.onEvict, int capacity = 0, String? name}) {
-    storageMetric = StorageMetric(name: name ?? runtimeType.toString(), capacity: capacity);
+    storageMetric =
+        StorageMetric(name: name ?? runtimeType.toString(), capacity: capacity);
     StorageMgr().register(this);
   }
 

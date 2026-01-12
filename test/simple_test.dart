@@ -3,20 +3,23 @@ import 'package:test/test.dart';
 
 void main() {
   test('Test cache initialization', () {
-    Cache cache = SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
+    Cache cache =
+        SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
     expect(cache, isNotNull);
     print(cache.storage.toString());
   });
   //
   test('Test simple insert/get', () {
-    Cache c = SimpleCache<String, int>(storage: StatisticsStorage(), capacity: 20);
+    Cache c =
+        SimpleCache<String, int>(storage: StatisticsStorage(), capacity: 20);
 
     c.set('key', 42);
     expect(c.get('key'), equals(42));
     print(c.storage.toString());
   });
   test('Test simple Cache', () {
-    Cache<int, int> c = SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
+    Cache<int, int> c =
+        SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 20);
     c[4] = 40;
     c[5] = 50;
     expect(c.get(4), equals(40));
@@ -24,7 +27,8 @@ void main() {
     print(c.storage.toString());
   });
   test('Test simple eviction', () {
-    Cache<int, int> c = SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    Cache<int, int> c =
+        SimpleCache<int, int>(storage: StatisticsStorage(), capacity: 3);
     c[4] = 40;
     c[5] = 50;
     c[6] = 60;
@@ -40,7 +44,8 @@ void main() {
   });
 
   test('Test LRU eviction', () {
-    Cache<int, int> c = LruCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    Cache<int, int> c =
+        LruCache<int, int>(storage: StatisticsStorage(), capacity: 3);
     c[4] = 40;
     c[5] = 50;
     c[6] = 60;
@@ -106,7 +111,8 @@ void main() {
   });
 
   test("test async producer", () async {
-    Cache<int, int> c = LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    Cache<int, int> c =
+        LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
 
     int a1 = await c.getOrProduce(4, (int key) {
       return Future.delayed(const Duration(seconds: 1), () {
@@ -133,7 +139,8 @@ void main() {
   });
 
   test("test async producer with async calls", () async {
-    Cache<int, int> c = LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
+    Cache<int, int> c =
+        LfuCache<int, int>(storage: StatisticsStorage(), capacity: 3);
 
     int calls = 0;
     List<Future> futures = [];

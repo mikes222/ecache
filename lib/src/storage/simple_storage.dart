@@ -11,7 +11,7 @@ class SimpleStorage<K, V> implements Storage<K, V> {
   /// The underlying [LinkedHashMap] that stores the cache entries.
   ///
   /// This map stores cache entries, where each key is associated with a [CacheEntry] object.
-  final Map<K, CacheEntry<K, V>> _internalMap = <K, CacheEntry<K, V>>{};
+  final Map<K, CacheEntry<K, V>> _internalMap = HashMap<K, CacheEntry<K, V>>();
 
   /// An optional callback that is invoked when an entry is evicted from the cache.
   ///

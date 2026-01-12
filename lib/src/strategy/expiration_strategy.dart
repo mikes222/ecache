@@ -6,24 +6,31 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
 
   int lastCleanup;
 
+  static final Stopwatch _expirationStopwatch = Stopwatch()..start();
+
+  static int _expirationNowMilliseconds() =>
+      _expirationStopwatch.elapsedMilliseconds;
+
   ExpirationStrategy({required Duration expiration})
       : assert(!expiration.isNegative),
         assert(expiration.inMilliseconds > 0),
-        lastCleanup = DateTime.now().millisecondsSinceEpoch,
+        lastCleanup = _expirationNowMilliseconds(),
         _expiration = expiration.inMilliseconds;
 
   @override
   void onCapacity(K key) {
-    int toRemove = DateTime.now().millisecondsSinceEpoch - _expiration;
+    final now = _expirationNowMilliseconds();
+    int toRemove = now - _expiration;
     if (lastCleanup > toRemove) return;
     Iterable<MapEntry<K, CacheEntry<K, V>>> itemsToRemove =
-        storage.entries.entries.where((element) => (element.value as ExpirationCacheEntry).insertTime < toRemove);
+        storage.entries.entries.where((element) =>
+            (element.value as ExpirationCacheEntry).insertTime < toRemove);
     // convert to list to avoid concurrent modification exceptions
     itemsToRemove.toList().forEach((element) {
       // do not call onCapacity because if the entry is expired we do not want to keep it anyway
       storage.removeInternal(element.key);
     });
-    lastCleanup = DateTime.now().millisecondsSinceEpoch;
+    lastCleanup = now;
   }
 
   @override
@@ -32,7 +39,8 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
   }
 
   @override
-  CacheEntry<K, V> createAndStartProducerEntry(K key, Produce<K, V> produce, int timeout) {
+  CacheEntry<K, V> createAndStartProducerEntry(
+      K key, Produce<K, V> produce, int timeout) {
     return ExpirationCacheEntry(ProducerEntry(produce)..start(key, timeout));
   }
 
@@ -40,7 +48,8 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
   CacheEntry<K, V>? get(K key) {
     CacheEntry<K, V>? entry = storage.get(key);
     if (entry == null) return null;
-    if ((entry as ExpirationCacheEntry).insertTime < DateTime.now().millisecondsSinceEpoch - _expiration) {
+    final now = _expirationNowMilliseconds();
+    if ((entry as ExpirationCacheEntry).insertTime < now - _expiration) {
       // do not call onCapacity because if the entry is expired we do not want to keep it anyway
       storage.removeInternal(key);
       return null;
@@ -54,5 +63,6 @@ class ExpirationStrategy<K, V> extends AbstractStrategy<K, V> {
 class ExpirationCacheEntry<K, V> extends CacheEntry<K, V> {
   final int insertTime;
 
-  ExpirationCacheEntry(super.entry) : insertTime = DateTime.now().millisecondsSinceEpoch;
+  ExpirationCacheEntry(super.entry)
+      : insertTime = ExpirationStrategy._expirationNowMilliseconds();
 }

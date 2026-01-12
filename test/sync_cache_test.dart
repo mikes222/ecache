@@ -92,11 +92,9 @@ void main() {
       test('stores multiple key-value pairs', () {
         final map = {'key1': 1, 'key2': 2, 'key3': 3};
         cache.setMap(map);
-        
-        // setMap has quirky behavior - it calls onCapacity only at start and end
-        // This means key1 gets evicted when onCapacity('key3') is called
-        expect(cache.length, 2);
-        expect(cache.get('key1'), isNull); // key1 was evicted
+
+        expect(cache.length, 3);
+        expect(cache.get('key1'), 1);
         expect(cache.get('key2'), 2);
         expect(cache.get('key3'), 3);
       });
@@ -104,7 +102,7 @@ void main() {
       test('overwrites existing values', () {
         cache.set('key1', 100);
         cache.setMap({'key1': 1, 'key2': 2});
-        
+
         expect(cache.get('key1'), 1);
         expect(cache.get('key2'), 2);
         expect(cache.length, 2);
@@ -117,12 +115,12 @@ void main() {
       test('handles capacity overflow with eviction', () {
         final map = {'key1': 1, 'key2': 2, 'key3': 3, 'key4': 4, 'key5': 5};
         cache.setMap(map);
-        
+
         // setMap calls onCapacity only at start and end, so behavior may vary
         // The cache should still respect some capacity constraints
         expect(cache.length, greaterThan(0));
         expect(cache.length, lessThanOrEqualTo(5));
-        
+
         // Verify that at least the last few keys are present
         expect(cache.containsKey('key5'), isTrue);
       });
@@ -132,25 +130,25 @@ void main() {
       test('returns existing value without calling producer', () {
         cache.set('key1', 100);
         bool producerCalled = false;
-        
+
         final result = cache.getOrProduceSync('key1', (key) {
           producerCalled = true;
           return 999;
         });
-        
+
         expect(result, 100);
         expect(producerCalled, isFalse);
       });
 
       test('produces and stores new value for non-existent key', () {
         bool producerCalled = false;
-        
+
         final result = cache.getOrProduceSync('key1', (key) {
           producerCalled = true;
           expect(key, 'key1');
           return 200;
         });
-        
+
         expect(result, 200);
         expect(producerCalled, isTrue);
         expect(cache.get('key1'), 200);
@@ -159,20 +157,20 @@ void main() {
 
       test('producer function receives correct key', () {
         String? receivedKey;
-        
+
         cache.getOrProduceSync('testKey', (key) {
           receivedKey = key;
           return 42;
         });
-        
+
         expect(receivedKey, 'testKey');
       });
 
       test('handles producer returning null', () {
         final nullableCache = SyncCache<String, int?>(capacity: 3);
-        
+
         final result = nullableCache.getOrProduceSync('key1', (key) => null);
-        
+
         expect(result, isNull);
         expect(nullableCache.containsKey('key1'), isTrue);
       });
@@ -212,7 +210,7 @@ void main() {
         cache.set('key2', 2);
         cache.set('key3', 3);
         expect(cache.length, 3);
-        
+
         cache.clear();
         expect(cache.length, 0);
         expect(cache.containsKey('key1'), isFalse);
@@ -224,7 +222,7 @@ void main() {
         cache.set('key1', 1);
         cache.clear();
         cache.set('key2', 2);
-        
+
         expect(cache.length, 1);
         expect(cache.get('key2'), 2);
       });
@@ -238,7 +236,7 @@ void main() {
       test('removes and returns value for existing key', () {
         cache.set('key1', 100);
         final removed = cache.remove('key1');
-        
+
         expect(removed, 100);
         expect(cache.containsKey('key1'), isFalse);
         expect(cache.length, 0);
@@ -248,9 +246,9 @@ void main() {
         cache.set('key1', 1);
         cache.set('key2', 2);
         cache.set('key3', 3);
-        
+
         final removed = cache.remove('key2');
-        
+
         expect(removed, 2);
         expect(cache.length, 2);
         expect(cache.containsKey('key1'), isTrue);
@@ -261,7 +259,7 @@ void main() {
       test('handles removing null values', () {
         final nullableCache = SyncCache<String, int?>(capacity: 3);
         nullableCache.set('key1', null);
-        
+
         final removed = nullableCache.remove('key1');
         expect(removed, isNull);
         expect(nullableCache.containsKey('key1'), isFalse);
@@ -276,10 +274,10 @@ void main() {
       test('returns correct count after additions', () {
         cache.set('key1', 1);
         expect(cache.length, 1);
-        
+
         cache.set('key2', 2);
         expect(cache.length, 2);
-        
+
         cache.set('key3', 3);
         expect(cache.length, 3);
       });
@@ -289,7 +287,7 @@ void main() {
         cache.set('key2', 2);
         cache.set('key3', 3);
         cache.set('key4', 4); // Should trigger eviction
-        
+
         expect(cache.length, 3);
       });
 
@@ -297,10 +295,10 @@ void main() {
         cache.set('key1', 1);
         cache.set('key2', 2);
         expect(cache.length, 2);
-        
+
         cache.remove('key1');
         expect(cache.length, 1);
-        
+
         cache.clear();
         expect(cache.length, 0);
       });
@@ -311,7 +309,7 @@ void main() {
         final intKeyCache = SyncCache<int, String>(capacity: 3);
         intKeyCache.set(1, 'one');
         intKeyCache.set(2, 'two');
-        
+
         expect(intKeyCache.get(1), 'one');
         expect(intKeyCache.get(2), 'two');
         expect(intKeyCache.containsKey(1), isTrue);
@@ -321,24 +319,24 @@ void main() {
       test('handles different value types', () {
         final stringCache = SyncCache<String, String>(capacity: 3);
         stringCache.set('key1', 'value1');
-        
+
         expect(stringCache.get('key1'), 'value1');
       });
 
       test('maintains cache integrity with mixed operations', () {
         cache.set('key1', 1);
         cache.setMap({'key2': 2, 'key3': 3});
-        
+
         final produced = cache.getOrProduceSync('key4', (key) => 4);
         expect(produced, 4);
-        
+
         cache.remove('key2');
-        
+
         // After removal, length should be one less
         final lengthAfterRemoval = cache.length;
         expect(lengthAfterRemoval, greaterThan(0));
         expect(cache.containsKey('key2'), isFalse);
-        
+
         // Verify that key4 was produced and stored
         expect(cache.containsKey('key4'), isTrue);
         expect(cache.get('key4'), 4);

@@ -23,15 +23,24 @@ class SyncCache<K, V> extends Cache<K, V> {
   ///
   /// An optional [strategy] can be provided. If not, a [SimpleStrategy]
   /// instance is used.
-  SyncCache({Storage<K, V>? storage, required int capacity, AbstractStrategy<K, V>? strategy, OnEvict<K, V>? onEvict, String? name})
+  SyncCache(
+      {Storage<K, V>? storage,
+      required int capacity,
+      AbstractStrategy<K, V>? strategy,
+      OnEvict<K, V>? onEvict,
+      String? name})
       : storage = storage ??
-            (StorageMgr().isEnabled() ? StatisticsStorage<K, V>(capacity: capacity, onEvict: onEvict, name: name) : SimpleStorage<K, V>(onEvict: onEvict)),
+            (StorageMgr().isEnabled()
+                ? StatisticsStorage<K, V>(
+                    capacity: capacity, onEvict: onEvict, name: name)
+                : SimpleStorage<K, V>(onEvict: onEvict)),
         strategy = strategy ?? SimpleStrategy<K, V>() {
     this.strategy.init(this.storage, capacity);
   }
 
   @override
   void dispose() {
+    strategy.onDispose();
     storage.dispose();
   }
 
@@ -53,12 +62,14 @@ class SyncCache<K, V> extends Cache<K, V> {
   }
 
   @override
-  Future<V> getOrProduce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]) async {
+  Future<V> getOrProduce(K key, Produce<K, V> produce,
+      [int timeoutMilliseconds = 60000]) async {
     throw UnimplementedError();
   }
 
   @override
-  Future<V> produce(K key, Produce<K, V> produce, [int timeoutMilliseconds = 60000]) async {
+  Future<V> produce(K key, Produce<K, V> produce,
+      [int timeoutMilliseconds = 60000]) async {
     throw UnimplementedError();
   }
 
@@ -88,12 +99,11 @@ class SyncCache<K, V> extends Cache<K, V> {
   @override
   void setMap(Map<K, V> elements) {
     assert(elements.isNotEmpty, "Cannot set an empty map");
-    strategy.onCapacity(elements.keys.first);
     elements.forEach((key, value) {
+      strategy.onCapacity(key);
       CacheEntry<K, V>? cacheEntry = strategy.createCacheEntry(key, value);
       storage.set(key, cacheEntry);
     });
-    strategy.onCapacity(elements.keys.last);
   }
 
   /// Returns the number of entries in the cache.
@@ -106,12 +116,16 @@ class SyncCache<K, V> extends Cache<K, V> {
 
   /// Removes all entries from the cache.
   @override
-  void clear() => storage.clear();
+  void clear() {
+    storage.clear();
+    strategy.onClear();
+  }
 
   /// Removes the entry for the given [key] from the cache and returns its value.
   @override
   V? remove(K key) {
     CacheEntry<K, V>? cacheEntry = storage.remove(key);
+    strategy.onRemove(key);
     if (cacheEntry == null) return null;
     return cacheEntry.getValue();
   }

@@ -206,6 +206,30 @@ void main() async {
   print(data2);
 }
 ```
+## Performance
+
+Cache with 10.000 items stored already and performing 10.000 iterations of the methods below. 
+Units are in microseconds. 
+
+### At/near capacity (eviction pressure)
+
+| Method | Simple | LRU | LFU | Expiration |
+| --- | --- | --- | --- | --- |
+| get | 0.22 | 0.29 | 0.62 | 0.39 |
+| set | 2.11 | 0.27 | 0.84 | 0.25 |
+| containsKey | 0.11 | 0.07 | 0.09 | 0.07 |
+| remove | 1.31 | 0.23 | 0.62 | 0.47 |
+| getOrProduceSync | 1.15 | 0.19 | 0.28 | 0.23 |
+
+### Plenty of free capacity
+
+| Method | Simple | LRU | LFU | Expiration |
+| --- |--------| --- | --- | --- |
+| get | 0.05   | 0.06 | 0.13 | 0.10 |
+| set | 0.11   | 0.15 | 0.16 | 0.20 |
+| containsKey | 0.05   | 0.04 | 0.05 | 0.04 |
+| remove | 0.09   | 0.14 | 0.18 | 0.21 |
+| getOrProduceSync | 0.09 | 0.05 | 0.37 | 0.05 |
 
 ## Architecture
 

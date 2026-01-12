@@ -10,6 +10,7 @@ class SimpleStrategy<K, V> extends AbstractStrategy<K, V> {
   @override
   void onCapacity(K key) {
     if (storage.length < capacity) return;
+    if (storage.containsKey(key)) return;
     storage.onCapacity(storage.keys.first);
   }
 
@@ -21,7 +22,8 @@ class SimpleStrategy<K, V> extends AbstractStrategy<K, V> {
 
   /// Creates a [SimpleProducerCacheEntry] for asynchronous value production.
   @override
-  CacheEntry<K, V> createAndStartProducerEntry(K key, Produce<K, V> produce, int timeout) {
+  CacheEntry<K, V> createAndStartProducerEntry(
+      K key, Produce<K, V> produce, int timeout) {
     return CacheEntry(ProducerEntry(produce)..start(key, timeout));
   }
 

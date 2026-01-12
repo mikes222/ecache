@@ -53,7 +53,8 @@ class StorageMgr {
   StorageReport createReport() {
     final report = StorageReport();
     for (var storage in _storages) {
-      report._storageMetrics.add(storage.storageMetric.._currentLength = storage.length);
+      report._storageMetrics
+          .add(storage.storageMetric.._currentLength = storage.length);
     }
     return report;
   }
@@ -162,7 +163,8 @@ class StorageReport {
   String toString() {
     final buffer = StringBuffer();
     buffer.writeln('Storage Report (${timestamp.toIso8601String()})');
-    buffer.writeln('Storages registered: $registered, unregistered: $unregistered');
+    buffer.writeln(
+        'Storages registered: $registered, unregistered: $unregistered');
     if (!enabled) buffer.writeln('Storage reports are disabled');
     for (final entry in storageMetrics) {
       buffer.writeln('  $entry');

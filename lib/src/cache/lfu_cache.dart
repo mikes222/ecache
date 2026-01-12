@@ -12,5 +12,6 @@ class LfuCache<K, V> extends DefaultCache<K, V> {
   ///
   /// An optional [storage] mechanism can be provided. If not, a [SimpleStorage]
   /// instance is used.
-  LfuCache({super.storage, required super.capacity, super.onEvict, super.name}) : super(strategy: LfuStrategy<K, V>());
+  LfuCache({super.storage, required super.capacity, super.onEvict, super.name})
+      : super(strategy: LfuStrategy<K, V>());
 }

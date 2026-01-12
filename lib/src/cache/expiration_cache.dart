@@ -6,6 +6,11 @@ import 'package:ecache/ecache.dart';
 /// Each entry is associated with a timestamp, and the [ExpirationStrategy]
 /// will evict entries whose age exceeds the configured duration.
 class ExpirationCache<K, V> extends DefaultCache<K, V> {
-  ExpirationCache({super.storage, required Duration expiration, required super.capacity, super.onEvict, super.name})
+  ExpirationCache(
+      {super.storage,
+      required Duration expiration,
+      required super.capacity,
+      super.onEvict,
+      super.name})
       : super(strategy: ExpirationStrategy<K, V>(expiration: expiration));
 }

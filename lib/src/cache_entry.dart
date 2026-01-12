@@ -42,13 +42,16 @@ class ProducerEntry<K, V> extends Entry<K, V> {
   ProducerEntry(this.produce);
 
   void abortProcess() {
-    if (!completer.isCompleted) completer.completeError(TimeoutException("Producer $produce aborted"));
+    if (!completer.isCompleted) {
+      completer.completeError(TimeoutException("Producer $produce aborted"));
+    }
   }
 
   /// Starts the asynchronous production of the value.
   Future<void> start(K key, int timeoutMilliseconds) async {
     try {
-      future = produce(key).timeout(Duration(milliseconds: timeoutMilliseconds));
+      future =
+          produce(key).timeout(Duration(milliseconds: timeoutMilliseconds));
       V producerValue = await future;
       // if the cache is disposed the future may already completed
       if (!completer.isCompleted) completer.complete(producerValue);

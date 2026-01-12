@@ -74,7 +74,8 @@ void main() {
       expect(cache.containsKey('a'), isTrue);
     });
 
-    test('getOrProduce() calls producer only once with concurrent requests', () async {
+    test('getOrProduce() calls producer only once with concurrent requests',
+        () async {
       final cache = SimpleCache<String, int>(capacity: 5);
       int producerCallCount = 0;
 
@@ -101,7 +102,8 @@ void main() {
       expect(await cache.getAsync('a'), 42);
     });
 
-    test('getOrProduce() succeeds when producer is faster than timeout', () async {
+    test('getOrProduce() succeeds when producer is faster than timeout',
+        () async {
       final cache = SimpleCache<String, int>(capacity: 1);
       final value = await cache.getOrProduce('a', (key) async {
         await Future.delayed(const Duration(milliseconds: 50));
@@ -112,7 +114,9 @@ void main() {
       expect(await cache.getAsync('a'), 1);
     });
 
-    test('getOrProduce() throws TimeoutException when producer is slower than timeout', () async {
+    test(
+        'getOrProduce() throws TimeoutException when producer is slower than timeout',
+        () async {
       final cache = SimpleCache<String, int>(capacity: 1);
 
       try {
@@ -148,7 +152,8 @@ void main() {
     });
 
     test('dispose() aborts a long-running getOrProduce()', () async {
-      final cache = SimpleCache<String, int>(capacity: 5, onEvict: (key, value) {});
+      final cache =
+          SimpleCache<String, int>(capacity: 5, onEvict: (key, value) {});
 
       // Start the long-running producer
       final future = cache.getOrProduce('a', (key) async {
@@ -165,8 +170,10 @@ void main() {
       //expect(value, 42);
     });
 
-    test('dispose() aborts a long-running getOrProduce() with exception', () async {
-      final cache = SimpleCache<String, int>(capacity: 5, onEvict: (key, value) {});
+    test('dispose() aborts a long-running getOrProduce() with exception',
+        () async {
+      final cache =
+          SimpleCache<String, int>(capacity: 5, onEvict: (key, value) {});
 
       // Start the long-running producer
       final future = cache.getOrProduce('a', (key) async {
